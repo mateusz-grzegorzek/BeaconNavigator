@@ -44,14 +44,16 @@
 #include <QGuiApplication>
 #include <QQuickView>
 #include "device.h"
-
+#include "beaconfilter.h"
+#include "beaconsmacaddresses.h"
 
 int main(int argc, char *argv[])
 {
-    //QLoggingCategory::setFilterRules(QStringLiteral("qt.bluetooth* = true"));
     QGuiApplication app(argc, argv);
 
     Device d;
+    BeaconFilter bf(getBeaconsMacAddresses(), -70);
+    d.setBeaconFilter(&bf);
     QQuickView *view = new QQuickView;
     view->rootContext()->setContextProperty("device", &d);
 

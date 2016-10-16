@@ -46,13 +46,12 @@
 #include <QObject>
 #include <QVariant>
 #include <QList>
-//#include <QBluetoothServiceDiscoveryAgent>
 #include <QBluetoothDeviceDiscoveryAgent>
-//#include <QLowEnergyController>
-//#include <QBluetoothServiceInfo>
 #include "deviceinfo.h"
+#include "beaconfilter.h"
 
 QT_FORWARD_DECLARE_CLASS (QBluetoothDeviceInfo)
+QT_FORWARD_DECLARE_CLASS (BeaconFilter)
 
 class Device: public QObject
 {
@@ -63,12 +62,18 @@ class Device: public QObject
 public:
     Device();
     ~Device();
+    void setBeaconFilter(BeaconFilter* beacon_filter);
     QVariant getDevices();
+    QList<QObject*>* getBeacons();
     QString getUpdate();
     bool state();
 
 public slots:
     void startDeviceDiscovery();
+    void stopDeviceDiscovery();
+    void filterBeaconsByMacAddresses();
+    void filterBeaconsByRssi();
+    void exitApplication();
 
 private slots:
     void addDevice(const QBluetoothDeviceInfo&);
@@ -86,6 +91,7 @@ private:
     QList<QObject*> devices;
     QString m_message;
     bool m_deviceScanState;
+    BeaconFilter* m_beacon_filter;
 };
 
 #endif // DEVICE_H

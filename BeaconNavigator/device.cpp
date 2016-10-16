@@ -48,6 +48,7 @@
 #include <QDebug>
 #include <QList>
 #include <QTimer>
+#include <QCoreApplication>
 
 Device::Device():
     m_deviceScanState(false)
@@ -64,16 +65,23 @@ Device::Device():
 
 Device::~Device()
 {
+    delete m_beacon_filter;
     delete discoveryAgent;
     qDeleteAll(devices);
     devices.clear();
 }
 
+void Device::setBeaconFilter(BeaconFilter *beacon_filter)
+{
+    m_beacon_filter = beacon_filter;
+}
+
 void Device::startDeviceDiscovery()
 {
+    qDebug() << "startDeviceDiscovery!";
     qDeleteAll(devices);
     devices.clear();
-    emit devicesUpdated();
+    Q_EMIT devicesUpdated();
 
     setUpdate("Scanning for devices ...");
     discoveryAgent->start();
@@ -84,29 +92,62 @@ void Device::startDeviceDiscovery()
     }
 }
 
+void Device::stopDeviceDiscovery()
+{
+    qDebug() << "stopDeviceDiscovery!";
+    discoveryAgent->stop();
+    Q_EMIT devicesUpdated();
+    m_deviceScanState = false;
+    Q_EMIT stateChanged();
+    setUpdate("Search");
+}
+
+void Device::filterBeaconsByMacAddresses()
+{
+    devices = m_beacon_filter->filterBeaconsByMacAddresses(devices);
+    Q_EMIT devicesUpdated();
+}
+
+void Device::filterBeaconsByRssi()
+{
+    devices = m_beacon_filter->filterBeaconsByRssi(devices);
+    Q_EMIT devicesUpdated();
+}
+
+void Device::exitApplication()
+{
+    QCoreApplication::quit();
+}
+
 void Device::addDevice(const QBluetoothDeviceInfo &info)
 {
     if (info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
+        qDebug() << "addDevice: ";
+        qDebug() << "name = " << info.name();
+        qDebug() << "address = " << info.address();
+        qDebug() << "rssi = " << info.rssi();
         DeviceInfo *d = new DeviceInfo(info);
         devices.append(d);
-        setUpdate("Last device added: " + d->getName());
     }
 }
 
 void Device::deviceScanFinished()
 {
-    emit devicesUpdated();
+    qDebug() << "deviceScanFinished!";
+    Q_EMIT devicesUpdated();
     m_deviceScanState = false;
-    emit stateChanged();
-    if (devices.isEmpty())
-        setUpdate("No Low Energy devices found...");
-    else
-        setUpdate("Done! Scan Again!");
+    Q_EMIT stateChanged();
+    setUpdate("Search");
 }
 
 QVariant Device::getDevices()
 {
     return QVariant::fromValue(devices);
+}
+
+QList<QObject *>* Device::getBeacons()
+{
+    return &devices;
 }
 
 QString Device::getUpdate()
@@ -117,7 +158,7 @@ QString Device::getUpdate()
 void Device::setUpdate(QString message)
 {
     m_message = message;
-    emit updateChanged();
+    Q_EMIT updateChanged();
 }
 
 void Device::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
@@ -130,8 +171,8 @@ void Device::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
         setUpdate("An unknown error has occurred.");
 
     m_deviceScanState = false;
-    emit devicesUpdated();
-    emit stateChanged();
+    Q_EMIT devicesUpdated();
+    Q_EMIT stateChanged();
 }
 
 bool Device::state()

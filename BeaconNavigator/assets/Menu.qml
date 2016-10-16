@@ -44,8 +44,8 @@ import QtQuick 2.0
 Rectangle {
 
     property real menuWidth: 100
-    property real menuHeight: 50
-    property string menuText: "Search"
+    property real menuHeight: (parent.height/10)
+    property string menuText: ""
     signal buttonClick()
 
     height: menuHeight

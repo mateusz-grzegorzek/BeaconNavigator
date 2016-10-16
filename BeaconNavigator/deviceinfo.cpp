@@ -62,9 +62,14 @@ QString DeviceInfo::getName() const
     return device.name();
 }
 
-QString DeviceInfo::getRssi() const
+QString DeviceInfo::getStringRssi() const
 {
     return QString::number(device.rssi());
+}
+
+qint16 DeviceInfo::getRssi() const
+{
+    return device.rssi();
 }
 
 QBluetoothDeviceInfo DeviceInfo::getDevice()
