@@ -65,9 +65,15 @@ Device::Device():
 
 Device::~Device()
 {
+    delete m_beacon_filter;
     delete discoveryAgent;
     qDeleteAll(devices);
     devices.clear();
+}
+
+void Device::setBeaconFilter(BeaconFilter *beacon_filter)
+{
+    m_beacon_filter = beacon_filter;
 }
 
 void Device::startDeviceDiscovery()
@@ -93,11 +99,24 @@ void Device::stopDeviceDiscovery()
     Q_EMIT devicesUpdated();
     m_deviceScanState = false;
     Q_EMIT stateChanged();
+    setUpdate("Search");
+}
+
+void Device::filterBeaconsByMacAddresses()
+{
+    devices = m_beacon_filter->filterBeaconsByMacAddresses(devices);
+    Q_EMIT devicesUpdated();
+}
+
+void Device::filterBeaconsByRssi()
+{
+    devices = m_beacon_filter->filterBeaconsByRssi(devices);
+    Q_EMIT devicesUpdated();
 }
 
 void Device::exitApplication()
 {
-    QCoreApplication::exit();
+    QCoreApplication::quit();
 }
 
 void Device::addDevice(const QBluetoothDeviceInfo &info)
@@ -118,15 +137,17 @@ void Device::deviceScanFinished()
     Q_EMIT devicesUpdated();
     m_deviceScanState = false;
     Q_EMIT stateChanged();
-    if (devices.isEmpty())
-        setUpdate("No Low Energy devices found...");
-    else
-        setUpdate("Done! Scan Again!");
+    setUpdate("Search");
 }
 
 QVariant Device::getDevices()
 {
     return QVariant::fromValue(devices);
+}
+
+QList<QObject *>* Device::getBeacons()
+{
+    return &devices;
 }
 
 QString Device::getUpdate()

@@ -61,7 +61,7 @@ Rectangle {
         menuWidth: (parent.width/2)
         menuText: "Filter by RSSI"
         onButtonClick: {
-
+            device.filterBeaconsByRssi();
         }
     }
 
@@ -72,7 +72,7 @@ Rectangle {
         menuWidth: (parent.width/2)
         menuText: "Filter by MAC"
         onButtonClick: {
-
+            device.filterBeaconsByMacAddresses();
         }
     }
 

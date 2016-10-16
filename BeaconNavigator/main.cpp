@@ -52,10 +52,10 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     Device d;
-    //BeaconFilter bf(getBeaconsMacAddresses(), -60);
+    BeaconFilter bf(getBeaconsMacAddresses(), -70);
+    d.setBeaconFilter(&bf);
     QQuickView *view = new QQuickView;
     view->rootContext()->setContextProperty("device", &d);
-    //view->rootContext()->setContextProperty("beacon_filter", &bf);
 
     view->setSource(QUrl("qrc:/assets/main.qml"));
     view->setResizeMode(QQuickView::SizeRootObjectToView);
