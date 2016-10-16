@@ -9,6 +9,7 @@
 *.so
 *.dll
 *.dylib
+*.obj
 
 # Qt-es
 
@@ -35,4 +36,7 @@ Makefile*
 
 # QtCtreator CMake
 CMakeLists.txt.user*
+
+# Android Build
+android-build/
 
