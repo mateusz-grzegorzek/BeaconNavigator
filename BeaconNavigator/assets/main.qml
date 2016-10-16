@@ -47,8 +47,10 @@ Rectangle {
     height: 600
     property bool deviceState: device.state
     onDeviceStateChanged: {
-        if (!device.state)
+        if (!device.state){
             info.visible = false;
+            pageLoader.source = "Filter.qml"
+        }
     }
 
     Header {
@@ -63,63 +65,31 @@ Rectangle {
         visible: false
     }
 
-    ListView {
-        id: theListView
-        width: parent.width
-        clip: true
-
-        anchors.top: header.bottom
-        anchors.bottom: menu.top
-        model: device.devicesList
-
-        delegate: Rectangle {
-            id: box
-            height:300
-            width: parent.width
-            color: "lightsteelblue"
-            border.width: 10
-            border.color: "black"
-            radius: 5
-
-            Label {
-                id: deviceName
-                textContent: modelData.deviceName
-                anchors.top: parent.top
-                anchors.topMargin: 5
-            }
-
-            Label {
-                id: deviceAddress
-                textContent: modelData.deviceAddress
-                font.pointSize: deviceName.font.pointSize*0.7
-                anchors.centerIn: parent
-                //anchors.bottom: box.bottom
-                //anchors.bottomMargin: 50
-            }
-
-            Label {
-                id: deviceRssi
-                textContent: modelData.deviceRssi
-                font.pointSize: deviceName.font.pointSize*0.7
-                anchors.bottom: box.bottom
-                anchors.bottomMargin: 0
+    Menu {
+        id: search
+        anchors.bottom: exit.top
+        menuWidth: parent.width
+        menuText: device.update
+        onButtonClick: {
+            if (!device.state) {
+                device.startDeviceDiscovery();
+                if (device.state) {
+                    info.dialogText = "Searching...";
+                    info.visible = true;
+                }
+            } else {
+                device.stopDeviceDiscovery();
             }
         }
     }
 
     Menu {
-        id: menu
+        id: exit
         anchors.bottom: parent.bottom
         menuWidth: parent.width
-        menuHeight: (parent.height/6)
-        menuText: device.update
+        menuText: "Exit"
         onButtonClick: {
-            device.startDeviceDiscovery();
-            // if startDeviceDiscovery() failed device.state is not set
-            if (device.state) {
-                info.dialogText = "Searching...";
-                info.visible = true;
-            }
+            device.exitApplication();
         }
     }
 

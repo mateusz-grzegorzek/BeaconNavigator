@@ -69,6 +69,8 @@ public:
 
 public slots:
     void startDeviceDiscovery();
+    void stopDeviceDiscovery();
+    void exitApplication();
 
 private slots:
     void addDevice(const QBluetoothDeviceInfo&);

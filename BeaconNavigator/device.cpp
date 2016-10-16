@@ -48,6 +48,7 @@
 #include <QDebug>
 #include <QList>
 #include <QTimer>
+#include <QCoreApplication>
 
 Device::Device():
     m_deviceScanState(false)
@@ -71,9 +72,10 @@ Device::~Device()
 
 void Device::startDeviceDiscovery()
 {
+    qDebug() << "startDeviceDiscovery!";
     qDeleteAll(devices);
     devices.clear();
-    emit devicesUpdated();
+    Q_EMIT devicesUpdated();
 
     setUpdate("Scanning for devices ...");
     discoveryAgent->start();
@@ -84,20 +86,38 @@ void Device::startDeviceDiscovery()
     }
 }
 
+void Device::stopDeviceDiscovery()
+{
+    qDebug() << "stopDeviceDiscovery!";
+    discoveryAgent->stop();
+    Q_EMIT devicesUpdated();
+    m_deviceScanState = false;
+    Q_EMIT stateChanged();
+}
+
+void Device::exitApplication()
+{
+    QCoreApplication::exit();
+}
+
 void Device::addDevice(const QBluetoothDeviceInfo &info)
 {
     if (info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
+        qDebug() << "addDevice: ";
+        qDebug() << "name = " << info.name();
+        qDebug() << "address = " << info.address();
+        qDebug() << "rssi = " << info.rssi();
         DeviceInfo *d = new DeviceInfo(info);
         devices.append(d);
-        setUpdate("Last device added: " + d->getName());
     }
 }
 
 void Device::deviceScanFinished()
 {
-    emit devicesUpdated();
+    qDebug() << "deviceScanFinished!";
+    Q_EMIT devicesUpdated();
     m_deviceScanState = false;
-    emit stateChanged();
+    Q_EMIT stateChanged();
     if (devices.isEmpty())
         setUpdate("No Low Energy devices found...");
     else
@@ -117,7 +137,7 @@ QString Device::getUpdate()
 void Device::setUpdate(QString message)
 {
     m_message = message;
-    emit updateChanged();
+    Q_EMIT updateChanged();
 }
 
 void Device::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
@@ -130,8 +150,8 @@ void Device::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
         setUpdate("An unknown error has occurred.");
 
     m_deviceScanState = false;
-    emit devicesUpdated();
-    emit stateChanged();
+    Q_EMIT devicesUpdated();
+    Q_EMIT stateChanged();
 }
 
 bool Device::state()
