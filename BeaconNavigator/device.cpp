@@ -48,10 +48,21 @@
 #include <QDebug>
 #include <QList>
 #include <QTimer>
-#include <QCoreApplication>
 
-Device::Device():
-    m_deviceScanState(false)
+void Device::run()
+{
+    qRegisterMetaType<QBluetoothDeviceDiscoveryAgent::Error>("QBluetoothDeviceDiscoveryAgent::Error");
+    m_deviceScanState = true;
+    while(m_deviceScanState)
+    {
+        startDeviceDiscovery();
+        QThread::sleep(3);
+        stopDeviceDiscovery();
+    }
+}
+
+Device::Device(Beacons* beacons):
+    m_deviceScanState(false), m_beacons(beacons)
 {
     discoveryAgent = new QBluetoothDeviceDiscoveryAgent();
     connect(discoveryAgent, SIGNAL(deviceDiscovered(const QBluetoothDeviceInfo&)),
@@ -59,123 +70,74 @@ Device::Device():
     connect(discoveryAgent, SIGNAL(error(QBluetoothDeviceDiscoveryAgent::Error)),
             this, SLOT(deviceScanError(QBluetoothDeviceDiscoveryAgent::Error)));
     connect(discoveryAgent, SIGNAL(finished()), this, SLOT(deviceScanFinished()));
-
-    setUpdate("Search");
 }
 
 Device::~Device()
 {
-    delete m_beacon_filter;
     delete discoveryAgent;
-    qDeleteAll(devices);
-    devices.clear();
-}
-
-void Device::setBeaconFilter(BeaconFilter *beacon_filter)
-{
-    m_beacon_filter = beacon_filter;
 }
 
 void Device::startDeviceDiscovery()
 {
-    qDebug() << "startDeviceDiscovery!";
-    qDeleteAll(devices);
-    devices.clear();
-    Q_EMIT devicesUpdated();
-
-    setUpdate("Scanning for devices ...");
+    qDebug() << "Device::startDeviceDiscovery";
     discoveryAgent->start();
-
-    if (discoveryAgent->isActive()) {
-        m_deviceScanState = true;
-        Q_EMIT stateChanged();
-    }
 }
 
 void Device::stopDeviceDiscovery()
 {
-    qDebug() << "stopDeviceDiscovery!";
+    qDebug() << "Device::stopDeviceDiscovery";
     discoveryAgent->stop();
-    Q_EMIT devicesUpdated();
+}
+
+void Device::turnOff()
+{
+    qDebug() << "Device::turnOff";
     m_deviceScanState = false;
-    Q_EMIT stateChanged();
-    setUpdate("Search");
 }
 
-void Device::filterBeaconsByMacAddresses()
+bool Device::getScanState()
 {
-    devices = m_beacon_filter->filterBeaconsByMacAddresses(devices);
-    Q_EMIT devicesUpdated();
-}
-
-void Device::filterBeaconsByRssi()
-{
-    devices = m_beacon_filter->filterBeaconsByRssi(devices);
-    Q_EMIT devicesUpdated();
-}
-
-void Device::exitApplication()
-{
-    QCoreApplication::quit();
+    return m_deviceScanState;
 }
 
 void Device::addDevice(const QBluetoothDeviceInfo &info)
 {
-    if (info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
+    if (info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
+    {
         qDebug() << "addDevice: ";
         qDebug() << "name = " << info.name();
         qDebug() << "address = " << info.address();
         qDebug() << "rssi = " << info.rssi();
-        DeviceInfo *d = new DeviceInfo(info);
-        devices.append(d);
+        if(deviceType(info) == my_beacon)
+        {
+            qDebug() << "Found my beacon!!!";
+            m_beacons->updateDistance(info.address().toString(), info.rssi());
+        }
     }
 }
 
 void Device::deviceScanFinished()
 {
-    qDebug() << "deviceScanFinished!";
-    Q_EMIT devicesUpdated();
+    qDebug() << "deviceScanFinished";
     m_deviceScanState = false;
-    Q_EMIT stateChanged();
-    setUpdate("Search");
-}
-
-QVariant Device::getDevices()
-{
-    return QVariant::fromValue(devices);
-}
-
-QList<QObject *>* Device::getBeacons()
-{
-    return &devices;
-}
-
-QString Device::getUpdate()
-{
-    return m_message;
-}
-
-void Device::setUpdate(QString message)
-{
-    m_message = message;
-    Q_EMIT updateChanged();
 }
 
 void Device::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
 {
     if (error == QBluetoothDeviceDiscoveryAgent::PoweredOffError)
-        setUpdate("The Bluetooth adaptor is powered off, power it on before doing discovery.");
+        m_beacons->setInfo("The Bluetooth adaptor is powered off, power it on before doing discovery.");
     else if (error == QBluetoothDeviceDiscoveryAgent::InputOutputError)
-        setUpdate("Writing or reading from the device resulted in an error.");
+        m_beacons->setInfo("Writing or reading from the device resulted in an error.");
     else
-        setUpdate("An unknown error has occurred.");
-
+        m_beacons->setInfo("An unknown error has occurred.");
     m_deviceScanState = false;
-    Q_EMIT devicesUpdated();
-    Q_EMIT stateChanged();
 }
 
-bool Device::state()
+device_type Device::deviceType(const QBluetoothDeviceInfo &info)
 {
-    return m_deviceScanState;
+    if(m_beacons->checkMacAddress(info.address().toString()))
+    {
+        return my_beacon;
+    }
+    return other_device;
 }

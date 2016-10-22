@@ -44,18 +44,22 @@
 #include <QGuiApplication>
 #include <QQuickView>
 #include "device.h"
-#include "beaconfilter.h"
-#include "beaconsmacaddresses.h"
+#include "beacons.h"
+#include "navigator.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    Device d;
-    BeaconFilter bf(getBeaconsMacAddresses(), -70);
-    d.setBeaconFilter(&bf);
+    Beacons beacons;
+    Device device(&beacons);
+    Calculator calculator;
+    Navigator navigator(&beacons, &calculator);
+    beacons.setDevice(&device);
+    beacons.setCalculator(&calculator);
+    beacons.setNavigator(&navigator);
     QQuickView *view = new QQuickView;
-    view->rootContext()->setContextProperty("device", &d);
+    view->rootContext()->setContextProperty("beacons", &beacons);
 
     view->setSource(QUrl("qrc:/assets/main.qml"));
     view->setResizeMode(QQuickView::SizeRootObjectToView);

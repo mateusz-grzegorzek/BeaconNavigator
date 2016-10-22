@@ -48,50 +48,38 @@
 #include <QList>
 #include <QBluetoothDeviceDiscoveryAgent>
 #include "deviceinfo.h"
-#include "beaconfilter.h"
+#include "beacons.h"
 
 QT_FORWARD_DECLARE_CLASS (QBluetoothDeviceInfo)
-QT_FORWARD_DECLARE_CLASS (BeaconFilter)
+QT_FORWARD_DECLARE_CLASS (Beacons)
 
-class Device: public QObject
+enum device_type
+{
+    my_beacon,
+    other_device
+};
+
+class Device: public QThread
 {
     Q_OBJECT
-    Q_PROPERTY(QVariant devicesList READ getDevices NOTIFY devicesUpdated)
-    Q_PROPERTY(QString update READ getUpdate WRITE setUpdate NOTIFY updateChanged)
-    Q_PROPERTY(bool state READ state NOTIFY stateChanged)
 public:
-    Device();
+    void run();
+    Device(Beacons* beacons);
     ~Device();
-    void setBeaconFilter(BeaconFilter* beacon_filter);
-    QVariant getDevices();
-    QList<QObject*>* getBeacons();
-    QString getUpdate();
-    bool state();
-
-public slots:
     void startDeviceDiscovery();
     void stopDeviceDiscovery();
-    void filterBeaconsByMacAddresses();
-    void filterBeaconsByRssi();
-    void exitApplication();
-
+    void turnOff();
+    bool getScanState();
 private slots:
     void addDevice(const QBluetoothDeviceInfo&);
     void deviceScanFinished();
     void deviceScanError(QBluetoothDeviceDiscoveryAgent::Error);
-
-Q_SIGNALS:
-    void devicesUpdated();
-    void updateChanged();
-    void stateChanged();
-
 private:
-    void setUpdate(QString message);
+    device_type deviceType(const QBluetoothDeviceInfo&);
+
     QBluetoothDeviceDiscoveryAgent *discoveryAgent;
-    QList<QObject*> devices;
-    QString m_message;
     bool m_deviceScanState;
-    BeaconFilter* m_beacon_filter;
+    Beacons* m_beacons;
 };
 
 #endif // DEVICE_H

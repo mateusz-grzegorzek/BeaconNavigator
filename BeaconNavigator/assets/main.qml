@@ -45,13 +45,6 @@ Rectangle {
     id: back
     width: 300
     height: 600
-    property bool deviceState: device.state
-    onDeviceStateChanged: {
-        if (!device.state){
-            info.visible = false;
-            pageLoader.source = "Filter.qml"
-        }
-    }
 
     Header {
         id: header
@@ -59,26 +52,24 @@ Rectangle {
         headerText: "Beacon Navigator"
     }
 
-    Dialog {
-        id: info
-        anchors.centerIn: parent
-        visible: false
+    Label{
+        id: position
+        anchors.top: header.bottom
+        anchors.bottom: exit.top
+        text: beacons.position
+        height: 200
     }
 
     Menu {
-        id: search
+        id: track
         anchors.bottom: exit.top
         menuWidth: parent.width
-        menuText: device.update
+        menuText: beacons.info
         onButtonClick: {
-            if (!device.state) {
-                device.startDeviceDiscovery();
-                if (device.state) {
-                    info.dialogText = "Searching...";
-                    info.visible = true;
-                }
+            if (!beacons.state) {
+                beacons.startTracking();
             } else {
-                device.stopDeviceDiscovery();
+                beacons.stopTracking()
             }
         }
     }
@@ -89,7 +80,7 @@ Rectangle {
         menuWidth: parent.width
         menuText: "Exit"
         onButtonClick: {
-            device.exitApplication();
+            beacons.exitApplication();
         }
     }
 

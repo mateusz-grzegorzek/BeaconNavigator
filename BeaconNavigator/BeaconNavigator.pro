@@ -7,15 +7,19 @@ QT += quick bluetooth
 SOURCES += main.cpp \
     device.cpp \
     deviceinfo.cpp \
-    beaconfilter.cpp
+    beacons.cpp \
+    calculator.cpp \
+    navigator.cpp
 
 OTHER_FILES += assets/*.qml
 
 HEADERS += \
     device.h \
     deviceinfo.h \
-    beaconfilter.h \
-    beaconsmacaddresses.h
+    beacons.h \
+    calculator.h \
+    navigator.h \
+    point.h
 
 RESOURCES += \
     resources.qrc
@@ -23,5 +27,4 @@ RESOURCES += \
 target.path = $$[QT_INSTALL_EXAMPLES]/bluetooth/BeaconNavigator
 INSTALLS += target
 
-DISTFILES += \
-    assets/Filter.qml
+DISTFILES +=
