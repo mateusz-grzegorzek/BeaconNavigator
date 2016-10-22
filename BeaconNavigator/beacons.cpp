@@ -30,7 +30,7 @@ void Beacons::setNavigator(Navigator *navigator)
     m_navigator = navigator;
 }
 
-void Beacons::startScan()\
+void Beacons::startScan()
 {
     qDebug() << "Beacons::startScan";
     m_device->start();
@@ -110,6 +110,11 @@ void Beacons::updateDistance(QString mac_address, qint16 rssi)
     m_beacons[mac_address].distance = m_calculator->calcDistance(rssi);
     m_mutex.unlock();
     qDebug() << "distance = " << m_beacons[mac_address].distance;
+}
+
+QList<DistanceToBeacon> Beacons::getDistances()
+{
+    return m_beacons.values();
 }
 
 void Beacons::startTracking()

@@ -19,7 +19,8 @@ HEADERS += \
     beacons.h \
     calculator.h \
     navigator.h \
-    point.h
+    point.h \
+    distancetobeacon.h
 
 RESOURCES += \
     resources.qrc

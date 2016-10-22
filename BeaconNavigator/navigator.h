@@ -7,6 +7,7 @@
 #include "point.h"
 
 QT_FORWARD_DECLARE_CLASS (Beacons)
+QT_FORWARD_DECLARE_CLASS (Calculator)
 QT_FORWARD_DECLARE_CLASS (Point)
 
 class Navigator: public QThread

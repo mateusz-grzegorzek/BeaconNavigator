@@ -6,19 +6,14 @@ void Navigator::run()
     m_navigate = true;
     while(m_navigate)
     {
-        QThread::sleep(1);
-        static int x = 0;
-        static int y = 0;
-        x++;
-        y++;
-        m_position.x = x;
-        m_position.y = y;
+        QThread::sleep(2);
+        m_position = m_calculator->calcMultilateration(m_beacons->getDistances());
         m_beacons->updatePosition();
     }
 }
 
 Navigator::Navigator(Beacons* beacons, Calculator* calculator)
-    :m_navigate(false), m_beacons(beacons), m_calculator(calculator)
+    :m_beacons(beacons), m_calculator(calculator), m_navigate(false)
 {
 
 }

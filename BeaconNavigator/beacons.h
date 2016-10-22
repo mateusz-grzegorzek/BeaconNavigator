@@ -10,15 +10,10 @@
 #include "calculator.h"
 #include "navigator.h"
 #include "point.h"
+#include "distancetobeacon.h"
 
 QT_FORWARD_DECLARE_CLASS (Device)
 QT_FORWARD_DECLARE_CLASS (Navigator)
-
-struct DistanceToBeacon
-{
-    Point point;
-    double distance;
-};
 
 class Beacons: public QObject
 {
@@ -39,6 +34,7 @@ public:
     bool state();
     bool checkMacAddress(QString mac_address);
     void updateDistance(QString mac_address, qint16 rssi);
+    QList<DistanceToBeacon> getDistances();
 public slots:
     void startTracking();
     void stopTracking();

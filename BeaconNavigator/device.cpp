@@ -56,7 +56,7 @@ void Device::run()
     while(m_deviceScanState)
     {
         startDeviceDiscovery();
-        QThread::sleep(3);
+        QThread::sleep(2);
         stopDeviceDiscovery();
     }
 }
