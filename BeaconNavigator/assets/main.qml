@@ -56,6 +56,7 @@ Rectangle {
         id: position
         anchors.top: header.bottom
         anchors.bottom: exit.top
+        anchors.centerIn: parent
         text: beacons.position
         height: 200
     }

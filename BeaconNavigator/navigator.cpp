@@ -7,6 +7,8 @@ void Navigator::run()
     while(m_navigate)
     {
         QThread::sleep(2);
+        if(!m_beacons->getDevice()->getScanState())
+            break;
         m_position = m_calculator->calcMultilateration(m_beacons->getDistances());
         m_beacons->updatePosition();
     }

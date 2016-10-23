@@ -35,6 +35,7 @@ public:
     bool checkMacAddress(QString mac_address);
     void updateDistance(QString mac_address, qint16 rssi);
     QList<DistanceToBeacon> getDistances();
+    Device *getDevice();
 public slots:
     void startTracking();
     void stopTracking();

@@ -21,6 +21,7 @@ public:
 private:
     void calcCMatrix(); // (A^T*A)^(-1)
     void calcCATMatrix(); // C*A^T
+    void calcBMatrix(); // b
     Point calcPosition();
 
     QList<DistanceToBeacon> m_distances;
@@ -29,6 +30,7 @@ private:
     const int N = 30;
     matrix c_matrix;
     matrix cat_matrix;
+    matrix b_matrix;
 };
 
 #endif // CALCULATOR_H

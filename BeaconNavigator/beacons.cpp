@@ -8,6 +8,11 @@ Beacons::Beacons()
     setInfo(start_tracking_msg);
     m_beacons.insert("F6:C2:B1:B4:11:EC", {{0,0}, 0});
     m_beacons.insert("E3:6B:7D:9B:A2:82", {{3,2}, 0});
+
+    // Fake beacons
+    m_beacons.insert("E3:6B:7D:9B:A2:83", {{-4,2}, 1.5});
+    m_beacons.insert("E3:6B:7D:9B:A2:84", {{-1,-2}, 2.3});
+    m_beacons.insert("E3:6B:7D:9B:A2:85", {{-5,1}, 3.1});
 }
 
 Beacons::~Beacons()
@@ -105,7 +110,7 @@ bool Beacons::checkMacAddress(QString mac_address)
 
 void Beacons::updateDistance(QString mac_address, qint16 rssi)
 {
-    qDebug() << "Beacons::addBeacon";
+    qDebug() << "Beacons::updateDistance";
     m_mutex.lock();
     m_beacons[mac_address].distance = m_calculator->calcDistance(rssi);
     m_mutex.unlock();
@@ -115,6 +120,11 @@ void Beacons::updateDistance(QString mac_address, qint16 rssi)
 QList<DistanceToBeacon> Beacons::getDistances()
 {
     return m_beacons.values();
+}
+
+Device *Beacons::getDevice()
+{
+    return m_device;
 }
 
 void Beacons::startTracking()
