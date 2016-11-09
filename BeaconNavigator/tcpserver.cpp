@@ -7,7 +7,7 @@ void TcpServer::startServer()
     m_tcp_server = new QTcpServer();
     connect(m_tcp_server, SIGNAL(newConnection()), this, SLOT(addClient()));
 
-    if(!m_tcp_server->listen(QHostAddress("192.168.1.101"), 9999))
+    if(!m_tcp_server->listen(QHostAddress::AnyIPv4, 9999))
     {
         logMessage("Server could not start");
     }
