@@ -49,6 +49,8 @@
 #include <QBluetoothDeviceDiscoveryAgent>
 #include "deviceinfo.h"
 #include "beacons.h"
+#include "logger.h"
+#include "loggerinterface.h"
 
 QT_FORWARD_DECLARE_CLASS (QBluetoothDeviceInfo)
 QT_FORWARD_DECLARE_CLASS (Beacons)
@@ -59,7 +61,7 @@ enum device_type
     other_device
 };
 
-class Device: public QThread
+class Device: public QThread, public LoggerInterface
 {
     Q_OBJECT
 public:
@@ -77,6 +79,7 @@ private slots:
 private:
     device_type deviceType(const QBluetoothDeviceInfo&);
 
+    Logger* m_logger;
     QBluetoothDeviceDiscoveryAgent *discoveryAgent;
     bool m_deviceScanState;
     Beacons* m_beacons;

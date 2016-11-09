@@ -2,6 +2,7 @@
 #include <QThread>
 #include <QCoreApplication>
 #include <QDebug>
+#include "tcpserver.h"
 
 Beacons::Beacons()
 {
@@ -13,11 +14,6 @@ Beacons::Beacons()
     m_beacons.insert("E3:6B:7D:9B:A2:83", {{-4,2}, 1.5});
     m_beacons.insert("E3:6B:7D:9B:A2:84", {{-1,-2}, 2.3});
     m_beacons.insert("E3:6B:7D:9B:A2:85", {{-5,1}, 3.1});
-}
-
-Beacons::~Beacons()
-{
-
 }
 
 void Beacons::setDevice(Device *device)
@@ -37,13 +33,13 @@ void Beacons::setNavigator(Navigator *navigator)
 
 void Beacons::startScan()
 {
-    qDebug() << "Beacons::startScan";
+    logMessage("Beacons::startScan");
     m_device->start();
 }
 
 void Beacons::stopScan()
 {
-    qDebug() << "Beacons::stopScan";
+    logMessage("Beacons::stopScan");
     m_device->turnOff();
     m_device->quit();
     m_device->wait();
@@ -51,13 +47,13 @@ void Beacons::stopScan()
 
 void Beacons::startNavigate()
 {
-    qDebug() << "Beacons::startNavigate";
+    logMessage("Beacons::startNavigate");
     m_navigator->start();
 }
 
 void Beacons::stopNavigate()
 {
-    qDebug() << "Beacons::stopNavigate";
+    logMessage("Beacons::stopNavigate");
     m_navigator->turnOff();
     m_navigator->quit();
     m_navigator->wait();
@@ -98,11 +94,11 @@ bool Beacons::state()
 
 bool Beacons::checkMacAddress(QString mac_address)
 {
-    qDebug() << "Beacons::checkMacAddress";
-    qDebug() << mac_address;
+    logMessage("Beacons::checkMacAddress:");
+    logMessage(mac_address);
     if(m_beacons.contains(mac_address))
     {
-        qDebug() << "Contains!!!";
+        logMessage("Contains.");
         return true;
     }
     return false;
@@ -110,11 +106,11 @@ bool Beacons::checkMacAddress(QString mac_address)
 
 void Beacons::updateDistance(QString mac_address, qint16 rssi)
 {
-    qDebug() << "Beacons::updateDistance";
+    logMessage("Beacons::updateDistance");
     m_mutex.lock();
     m_beacons[mac_address].distance = m_calculator->calcDistance(rssi);
     m_mutex.unlock();
-    qDebug() << "distance = " << m_beacons[mac_address].distance;
+    logMessage("distance = " + QString::number(m_beacons[mac_address].distance));
 }
 
 QList<DistanceToBeacon> Beacons::getDistances()
@@ -129,7 +125,7 @@ Device *Beacons::getDevice()
 
 void Beacons::startTracking()
 {
-    qDebug() << "Beacons::startTracking";
+    logMessage("Beacons::startTracking");
     startScan();
     startNavigate();
     setInfo("Tracking...");
@@ -137,7 +133,7 @@ void Beacons::startTracking()
 
 void Beacons::stopTracking()
 {
-    qDebug() << "Beacons::stopTracking";
+    logMessage("Beacons::stopTracking");
     stopScan();
     stopNavigate();
     setInfo(start_tracking_msg);

@@ -27,6 +27,6 @@ Point Navigator::getPosition()
 
 void Navigator::turnOff()
 {
-    qDebug() << "Navigator::turnOff";
+    logMessage("Navigator::turnOff");
     m_navigate = false;
 }

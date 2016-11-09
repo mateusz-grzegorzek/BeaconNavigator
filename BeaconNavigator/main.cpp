@@ -46,21 +46,34 @@
 #include "device.h"
 #include "beacons.h"
 #include "navigator.h"
+#include "tcpserver.h"
+#include "logger.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
+    TcpServer tcpServer;
+    tcpServer.startServer();
+
     Beacons beacons;
     Device device(&beacons);
     Calculator calculator;
     Navigator navigator(&beacons, &calculator);
+
     beacons.setDevice(&device);
     beacons.setCalculator(&calculator);
     beacons.setNavigator(&navigator);
+
+    Logger logger;
+    beacons.setLogger(&logger);
+    device.setLogger(&logger);
+    calculator.setLogger(&logger);
+    navigator.setLogger(&logger);
+    tcpServer.setLogger(&logger);
+
     QQuickView *view = new QQuickView;
     view->rootContext()->setContextProperty("beacons", &beacons);
-
     view->setSource(QUrl("qrc:/assets/main.qml"));
     view->setResizeMode(QQuickView::SizeRootObjectToView);
     view->show();

@@ -2,6 +2,7 @@ TARGET = BeaconNavigator
 INCLUDEPATH += .
 
 QT += quick bluetooth
+QT += network
 
 # Input
 SOURCES += main.cpp \
@@ -9,7 +10,10 @@ SOURCES += main.cpp \
     deviceinfo.cpp \
     beacons.cpp \
     calculator.cpp \
-    navigator.cpp
+    navigator.cpp \
+    tcpserver.cpp \
+    logger.cpp \
+    loggerinterface.cpp
 
 OTHER_FILES += assets/*.qml
 
@@ -20,7 +24,10 @@ HEADERS += \
     calculator.h \
     navigator.h \
     point.h \
-    distancetobeacon.h
+    distancetobeacon.h \
+    tcpserver.h \
+    logger.h \
+    loggerinterface.h
 
 RESOURCES += \
     resources.qrc

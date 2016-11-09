@@ -5,12 +5,14 @@
 #include "beacons.h"
 #include "calculator.h"
 #include "point.h"
+#include "logger.h"
+#include "loggerinterface.h"
 
 QT_FORWARD_DECLARE_CLASS (Beacons)
 QT_FORWARD_DECLARE_CLASS (Calculator)
 QT_FORWARD_DECLARE_CLASS (Point)
 
-class Navigator: public QThread
+class Navigator: public QThread, public LoggerInterface
 {
     Q_OBJECT
 public:

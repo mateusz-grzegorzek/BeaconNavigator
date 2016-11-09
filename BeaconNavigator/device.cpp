@@ -79,19 +79,19 @@ Device::~Device()
 
 void Device::startDeviceDiscovery()
 {
-    qDebug() << "Device::startDeviceDiscovery";
+    logMessage("Device::startDeviceDiscovery");
     discoveryAgent->start();
 }
 
 void Device::stopDeviceDiscovery()
 {
-    qDebug() << "Device::stopDeviceDiscovery";
+    logMessage("Device::stopDeviceDiscovery");
     discoveryAgent->stop();
 }
 
 void Device::turnOff()
 {
-    qDebug() << "Device::turnOff";
+    logMessage("Device::turnOff");
     m_deviceScanState = false;
 }
 
@@ -104,13 +104,13 @@ void Device::addDevice(const QBluetoothDeviceInfo &info)
 {
     if (info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
     {
-        qDebug() << "addDevice: ";
-        qDebug() << "name = " << info.name();
-        qDebug() << "address = " << info.address();
-        qDebug() << "rssi = " << info.rssi();
+        logMessage("addDevice: ");
+        logMessage("name = " + info.name());
+        logMessage("address = " + info.address().toString());
+        logMessage("rssi = " + QString::number(info.rssi()));
         if(deviceType(info) == my_beacon)
         {
-            qDebug() << "Found my beacon!!!";
+            logMessage("Found my beacon!");
             m_beacons->updateDistance(info.address().toString(), info.rssi());
         }
     }
@@ -118,18 +118,32 @@ void Device::addDevice(const QBluetoothDeviceInfo &info)
 
 void Device::deviceScanFinished()
 {
-    qDebug() << "deviceScanFinished";
+    logMessage("deviceScanFinished");
     m_deviceScanState = false;
 }
 
 void Device::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
 {
     if (error == QBluetoothDeviceDiscoveryAgent::PoweredOffError)
-        m_beacons->setInfo("The Bluetooth adaptor is powered off, power it on before doing discovery.");
+    {
+        QString msg = "The Bluetooth adaptor is powered off, power it on before doing discovery.\n";
+        m_beacons->setInfo(msg);
+        logMessage(msg);
+    }
+
     else if (error == QBluetoothDeviceDiscoveryAgent::InputOutputError)
-        m_beacons->setInfo("Writing or reading from the device resulted in an error.");
+    {
+        QString msg = "Writing or reading from the device resulted in an error.\n";
+        m_beacons->setInfo(msg);
+        logMessage(msg);
+    }
     else
-        m_beacons->setInfo("An unknown error has occurred.");
+    {
+        QString msg = "An unknown error has occurred.\n";
+        m_beacons->setInfo(msg);
+        logMessage(msg);
+    }
+
     m_deviceScanState = false;
 }
 

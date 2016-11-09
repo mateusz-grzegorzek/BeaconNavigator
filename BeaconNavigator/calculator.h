@@ -7,15 +7,16 @@
 #include "beacons.h"
 #include "point.h"
 #include "distancetobeacon.h"
+#include "logger.h"
+#include "loggerinterface.h"
 
 QT_FORWARD_DECLARE_CLASS (Beacons)
 
 typedef QList<double> matrix;
 
-class Calculator
+class Calculator: public LoggerInterface
 {
 public:
-    Calculator();
     double calcDistance(qint16 rssi);
     Point calcMultilateration(QList<DistanceToBeacon> distances);
 private:
@@ -24,6 +25,7 @@ private:
     void calcBMatrix(); // b
     Point calcPosition();
 
+    Logger* m_logger;
     QList<DistanceToBeacon> m_distances;
     DistanceToBeacon m_last_distance;
     const double f = 2400;

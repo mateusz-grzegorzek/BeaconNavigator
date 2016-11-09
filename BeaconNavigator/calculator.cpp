@@ -2,11 +2,6 @@
 #include "calculator.h"
 #include <math.h>
 
-Calculator::Calculator()
-{
-
-}
-
 double Calculator::calcDistance(qint16 rssi)
 {
     double power = (-rssi - 30 + 28 - 20 * log10(f)) / N;
@@ -16,7 +11,7 @@ double Calculator::calcDistance(qint16 rssi)
 
 Point Calculator::calcMultilateration(QList<DistanceToBeacon> distances)
 {
-    qDebug() << "Calculator::calcMultilateration";
+    logMessage("Calculator::calcMultilateration");
     m_distances = distances;
     m_last_distance = m_distances.last();
     calcCMatrix();
@@ -82,7 +77,7 @@ Point Calculator::calcPosition()
     int size = b_matrix.size();
     if(cat_matrix.size() != 2*size)
     {
-        qDebug() << "Calculator::calcPosition::ERROR!!!";
+        logMessage("Calculator::calcPosition::ERROR!!!");
         return {0,0};
     }
     for(int i = 0; i < size; ++i)
