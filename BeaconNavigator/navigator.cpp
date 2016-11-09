@@ -9,7 +9,8 @@ void Navigator::run()
         QThread::sleep(2);
         if(!m_beacons->getDevice()->getScanState())
             break;
-        m_position = m_calculator->calcMultilateration(m_beacons->getDistances());
+        //m_position = m_calculator->calcMultilateration(m_beacons->getDistances());
+        m_position = m_calculator->calcWeightedArithMean(m_beacons->getDistances());
         m_beacons->updatePosition();
     }
 }

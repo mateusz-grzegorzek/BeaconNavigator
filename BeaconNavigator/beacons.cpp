@@ -113,6 +113,11 @@ void Beacons::updateDistance(QString mac_address, qint16 rssi)
     logMessage("distance = " + QString::number(m_beacons[mac_address].distance));
 }
 
+double Beacons::getDistance(QString mac_address)
+{
+    return m_beacons[mac_address].distance;
+}
+
 QList<DistanceToBeacon> Beacons::getDistances()
 {
     return m_beacons.values();

@@ -17,8 +17,9 @@ typedef QList<double> matrix;
 class Calculator: public LoggerInterface
 {
 public:
-    double calcDistance(qint16 rssi);
+    double calcDistance(qint16 rssi) const;
     Point calcMultilateration(QList<DistanceToBeacon> distances);
+    Point calcWeightedArithMean(QList<DistanceToBeacon> distances);
 private:
     void calcCMatrix(); // (A^T*A)^(-1)
     void calcCATMatrix(); // C*A^T

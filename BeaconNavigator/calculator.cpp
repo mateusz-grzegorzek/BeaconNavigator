@@ -2,7 +2,7 @@
 #include "calculator.h"
 #include <math.h>
 
-double Calculator::calcDistance(qint16 rssi)
+double Calculator::calcDistance(qint16 rssi) const
 {
     double power = (-rssi - 30 + 28 - 20 * log10(f)) / N;
     double path = pow(10, power);
@@ -18,6 +18,23 @@ Point Calculator::calcMultilateration(QList<DistanceToBeacon> distances)
     calcCATMatrix();
     calcBMatrix();
     return calcPosition();
+}
+
+Point Calculator::calcWeightedArithMean(QList<DistanceToBeacon> distances)
+{
+    qDebug() << "Calculator::calcWeightedArithMean";
+    m_distances = distances;
+    Point point{0,0};
+    double sum_of_distances = 0;
+    for(DistanceToBeacon distance: m_distances)
+    {
+        point.x += distance.point.x*distance.distance;
+        point.y += distance.point.y*distance.distance;
+        sum_of_distances += distance.distance;
+    }
+    point.x /= sum_of_distances;
+    point.y /= sum_of_distances;
+    return point;
 }
 
 void Calculator::calcCMatrix()
