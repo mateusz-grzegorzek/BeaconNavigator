@@ -51,12 +51,12 @@
 
 void Device::run()
 {
-    qRegisterMetaType<QBluetoothDeviceDiscoveryAgent::Error>("QBluetoothDeviceDiscoveryAgent::Error");
+    logMessage("Device::turnOn");
     m_deviceScanState = true;
     while(m_deviceScanState)
     {
         startDeviceDiscovery();
-        QThread::sleep(2);
+        QThread::sleep(1);
         stopDeviceDiscovery();
     }
 }
@@ -70,6 +70,7 @@ Device::Device(Beacons* beacons):
     connect(discoveryAgent, SIGNAL(error(QBluetoothDeviceDiscoveryAgent::Error)),
             this, SLOT(deviceScanError(QBluetoothDeviceDiscoveryAgent::Error)));
     connect(discoveryAgent, SIGNAL(finished()), this, SLOT(deviceScanFinished()));
+    qRegisterMetaType<QBluetoothDeviceDiscoveryAgent::Error>("QBluetoothDeviceDiscoveryAgent::Error");
 }
 
 Device::~Device()
@@ -111,7 +112,7 @@ void Device::addDevice(const QBluetoothDeviceInfo &info)
         if(deviceType(info) == my_beacon)
         {
             logMessage("Found my beacon!");
-            m_beacons->updateDistance(info.address().toString(), info.rssi());
+            m_beacons->updateBeaconInfo(info.address().toString(), info.rssi());
         }
     }
 }

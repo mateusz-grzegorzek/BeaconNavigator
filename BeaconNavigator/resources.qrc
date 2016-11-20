@@ -5,5 +5,7 @@
         <file>assets/Header.qml</file>
         <file>assets/Label.qml</file>
         <file>assets/busy_dark.png</file>
+        <file>assets/Rssi.qml</file>
+        <file>assets/InputBox.qml</file>
     </qresource>
 </RCC>

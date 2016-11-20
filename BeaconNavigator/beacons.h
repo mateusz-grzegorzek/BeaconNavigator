@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QThread>
 #include <QMutex>
+#include <QFile>
 #include "device.h"
 #include "calculator.h"
 #include "navigator.h"
@@ -17,12 +18,20 @@
 QT_FORWARD_DECLARE_CLASS (Device)
 QT_FORWARD_DECLARE_CLASS (Navigator)
 
+enum mode_type
+{
+    tracking,
+    rssi_measuring
+};
+
 class Beacons: public QObject, public LoggerInterface
 {
     Q_OBJECT
     Q_PROPERTY(QString info READ getInfo WRITE setInfo NOTIFY infoChanged)
     Q_PROPERTY(QString position READ getPosition NOTIFY positionChanged)
     Q_PROPERTY(bool state READ state NOTIFY stateChanged)
+    Q_PROPERTY(bool rssiMeasState READ rssiMeasState NOTIFY rssiMeasStateChanged)
+    Q_PROPERTY(QString rssiMacAddress READ getRssiMacAddress WRITE setRssiMacAddress NOTIFY rssiMacAddressChanged)
 public:
     Beacons();
     void setDevice(Device* device);
@@ -34,20 +43,30 @@ public:
     QString getPosition();
     void updatePosition();
     bool state();
+    bool rssiMeasState();
     bool checkMacAddress(QString mac_address);
-    void updateDistance(QString mac_address, qint16 rssi);
+    void updateBeaconInfo(QString mac_address, qint16 rssi);
     double getDistance(QString mac_address);
     QList<DistanceToBeacon> getDistances();
     Device *getDevice();
 public slots:
     void startTracking();
     void stopTracking();
+    void startMeasuring(QString mac_address);
+    void stopMeasuring();
+    QString getRssiMacAddress();
+    void setRssiMacAddress(QString mac_address);
     void exitApplication();
 Q_SIGNALS:
     void infoChanged();
     void positionChanged();
     void stateChanged();
+    void rssiMeasStateChanged();
+    void rssiMacAddressChanged();
 private:
+    void updateDistance(QString mac_address, qint16 rssi);
+    void updateRssi(QString mac_address, qint16 rssi);
+    bool validateMacAddress(QString mac_address);
     void startScan();
     void stopScan();
     void startNavigate();
@@ -61,6 +80,11 @@ private:
     QMutex m_mutex;
     QString m_info;
     QString m_position;
+
+    mode_type m_mode_type;
+    bool m_rssi_meas_state;
+    QString m_rssi_mac_address;
+    QFile* m_rssi_log_file;
 
     QString start_tracking_msg = "Start Tracking";
 };

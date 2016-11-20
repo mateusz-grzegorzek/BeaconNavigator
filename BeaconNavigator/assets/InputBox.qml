@@ -39,52 +39,48 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QLoggingCategory>
-#include <QQmlContext>
-#include <QGuiApplication>
-#include <QQuickView>
-#include "device.h"
-#include "beacons.h"
-#include "navigator.h"
-#include "tcpserver.h"
-#include "logger.h"
+import QtQuick 2.0
 
-#if(G_TEST == 1)
-#include <gtest/gtest.h>
-#endif
+Rectangle {
 
-int main(int argc, char *argv[])
-{
-#if(G_TEST == 1)
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-#endif
+    property real menuWidth: parent.width
+    property real menuHeight: (parent.height/7)
+    property string labelText: ""
+    property string inputText: ""
 
-    QGuiApplication app(argc, argv);
+    height: menuHeight
+    width: menuWidth
 
-    TcpServer tcpServer;
-    tcpServer.startServer();
+    Rectangle {
+        id: input
+        width: parent.width
+        height: parent.height
+        anchors.centerIn: parent
+        color: "#363636"
+        border.width: 1
+        border.color: "#E3E3E3"
+        radius: 5
+        Text {
+            id: label
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+            anchors.fill: parent
+            anchors.leftMargin: parent.width/10
+            text: labelText
+            width: parent.width/2
+            elide: Text.ElideMiddle
+            color: "#E3E3E3"
+            wrapMode: Text.WordWrap
+        }
 
-    Beacons beacons;
-    Device device(&beacons);
-    Calculator calculator;
-    Navigator navigator(&beacons, &calculator);
-
-    beacons.setDevice(&device);
-    beacons.setCalculator(&calculator);
-    beacons.setNavigator(&navigator);
-
-    Logger logger("/sdcard/Download/");
-    beacons.setLogger(&logger);
-    device.setLogger(&logger);
-    calculator.setLogger(&logger);
-    navigator.setLogger(&logger);
-    tcpServer.setLogger(&logger);
-
-    QQuickView *view = new QQuickView;
-    view->rootContext()->setContextProperty("beacons", &beacons);
-    view->setSource(QUrl("qrc:/assets/main.qml"));
-    view->setResizeMode(QQuickView::SizeRootObjectToView);
-    view->show();
-    return app.exec();
+        TextEdit {
+            id: text_input
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            anchors.fill: parent
+            width: parent.width/2
+            onTextChanged: inputText = text
+            color: "#E3E3E3"
+        }
+    }
 }
