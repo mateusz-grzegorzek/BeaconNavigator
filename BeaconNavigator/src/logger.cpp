@@ -26,9 +26,25 @@ void Logger::closeLogFile(QFile* file)
 QFile* Logger::createLogFile(QString file_name)
 {
     QTime current_time = QTime::currentTime();
-    file_name += current_time.toString() + "." + QString::number(current_time.msec());
-    file_name += ".txt";
-    return new QFile(m_path_to_logs + file_name);
+    QString time_stamp = current_time.toString() + ".";
+    int msec = current_time.msec();
+    if(msec < 100)
+    {
+        time_stamp += "0";
+        if(msec < 10)
+        {
+            time_stamp += "0";
+        }
+    }
+    time_stamp += QString::number(msec);
+    QString log_file_name = time_stamp;
+    if(file_name != "")
+    {
+        log_file_name +=  "_";
+        log_file_name += file_name;
+    }
+    log_file_name += ".txt";
+    return new QFile(m_path_to_logs + log_file_name);
 }
 
 void Logger::saveLog(QFile* file, QString log)

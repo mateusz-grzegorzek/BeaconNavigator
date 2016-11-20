@@ -1,6 +1,8 @@
 #ifndef DISTANCETOBEACON_H
 #define DISTANCETOBEACON_H
 
+#include "point.h"
+
 struct DistanceToBeacon
 {
     Point point;

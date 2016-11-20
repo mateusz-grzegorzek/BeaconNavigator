@@ -103,17 +103,14 @@ bool Device::getScanState()
 
 void Device::addDevice(const QBluetoothDeviceInfo &info)
 {
+    logMessage("addDevice: ");
+    logMessage("name = " + info.name());
+    logMessage("address = " + info.address().toString());
+    logMessage("rssi = " + QString::number(info.rssi()));
+    logMessage("info = " + QString::number(info.coreConfigurations()));
     if (info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
     {
-        logMessage("addDevice: ");
-        logMessage("name = " + info.name());
-        logMessage("address = " + info.address().toString());
-        logMessage("rssi = " + QString::number(info.rssi()));
-        if(deviceType(info) == my_beacon)
-        {
-            logMessage("Found my beacon!");
-            m_beacons->updateBeaconInfo(info.address().toString(), info.rssi());
-        }
+        m_beacons->updateBeaconInfo(info.address().toString(), info.rssi());
     }
 }
 
@@ -146,13 +143,4 @@ void Device::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
     }
 
     m_deviceScanState = false;
-}
-
-device_type Device::deviceType(const QBluetoothDeviceInfo &info)
-{
-    if(m_beacons->checkMacAddress(info.address().toString()))
-    {
-        return my_beacon;
-    }
-    return other_device;
 }

@@ -7,5 +7,6 @@
         <file>assets/busy_dark.png</file>
         <file>assets/Rssi.qml</file>
         <file>assets/InputBox.qml</file>
+        <file>assets/BeaconEditor.qml</file>
     </qresource>
 </RCC>

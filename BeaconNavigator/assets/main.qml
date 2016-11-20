@@ -22,7 +22,7 @@ Rectangle {
 
     Menu {
         id: track
-        anchors.bottom: rssi_meas.top
+        anchors.bottom: beacon_register.top
         menuWidth: parent.width
         menuText: beacons.info
         onButtonClick: {
@@ -31,6 +31,17 @@ Rectangle {
             } else {
                 beacons.stopTracking()
             }
+        }
+    }
+
+    Menu {
+        id: beacon_register
+        anchors.bottom: rssi_meas.top
+        menuWidth: parent.width
+        menuText: "Beacon Editor"
+        onButtonClick: {
+            beacons.info = "Edit Beacon"
+            pageLoader.source = "BeaconEditor.qml"
         }
     }
 

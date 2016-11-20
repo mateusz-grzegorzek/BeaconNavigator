@@ -1,10 +1,9 @@
-/***************************************************************************
+/****************************************************************************
 **
-** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtBluetooth module of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -39,35 +38,42 @@
 **
 ****************************************************************************/
 
-#ifndef DEVICEINFO_H
-#define DEVICEINFO_H
+#ifndef DEVICE_H
+#define DEVICE_H
 
+#include <qbluetoothglobal.h>
+#include <qbluetoothlocaldevice.h>
 #include <QObject>
-#include <qbluetoothdeviceinfo.h>
-#include <qbluetoothaddress.h>
+#include <QVariant>
 #include <QList>
-#include "deviceinfo.h"
+#include <QBluetoothDeviceDiscoveryAgent>
+#include "beacons.h"
+#include "logger.h"
+#include "loggerinterface.h"
 
-class DeviceInfo: public QObject
+QT_FORWARD_DECLARE_CLASS (QBluetoothDeviceInfo)
+QT_FORWARD_DECLARE_CLASS (Beacons)
+
+class Device: public QThread, public LoggerInterface
 {
     Q_OBJECT
-    Q_PROPERTY(QString deviceName READ getName NOTIFY deviceChanged)
-    Q_PROPERTY(QString deviceAddress READ getAddress NOTIFY deviceChanged)
-    Q_PROPERTY(QString deviceRssi READ getStringRssi NOTIFY deviceChanged)
 public:
-    DeviceInfo();
-    DeviceInfo(const QBluetoothDeviceInfo &d);
-    QString getAddress() const;
-    QString getName() const;
-    qint16 getRssi() const;
-    QString getStringRssi() const;
-    QBluetoothDeviceInfo getDevice();
-
-Q_SIGNALS:
-    void deviceChanged();
-
+    void run();
+    Device(Beacons* beacons);
+    ~Device();
+    void startDeviceDiscovery();
+    void stopDeviceDiscovery();
+    void turnOff();
+    bool getScanState();
+private slots:
+    void addDevice(const QBluetoothDeviceInfo&);
+    void deviceScanFinished();
+    void deviceScanError(QBluetoothDeviceDiscoveryAgent::Error);
 private:
-    QBluetoothDeviceInfo device;
+    Logger* m_logger;
+    QBluetoothDeviceDiscoveryAgent *discoveryAgent;
+    bool m_deviceScanState;
+    Beacons* m_beacons;
 };
 
-#endif // DEVICEINFO_H
+#endif // DEVICE_H

@@ -54,6 +54,7 @@ public slots:
     void stopTracking();
     void startMeasuring(QString mac_address);
     void stopMeasuring();
+    void editBeacon(QString mac_address, QString position);
     QString getRssiMacAddress();
     void setRssiMacAddress(QString mac_address);
     void exitApplication();

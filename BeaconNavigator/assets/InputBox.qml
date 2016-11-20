@@ -65,7 +65,7 @@ Rectangle {
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
             anchors.fill: parent
-            anchors.leftMargin: parent.width/10
+            anchors.leftMargin: parent.width/20
             text: labelText
             width: parent.width/2
             elide: Text.ElideMiddle
