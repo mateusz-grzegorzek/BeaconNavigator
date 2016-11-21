@@ -29,7 +29,7 @@ class Beacons: public QObject, public LoggerInterface
     Q_OBJECT
     Q_PROPERTY(QString info READ getInfo WRITE setInfo NOTIFY infoChanged)
     Q_PROPERTY(QString position READ getPosition NOTIFY positionChanged)
-    Q_PROPERTY(bool state READ state NOTIFY stateChanged)
+    Q_PROPERTY(bool trackingState READ trackingState NOTIFY stateChanged)
     Q_PROPERTY(bool rssiMeasState READ rssiMeasState NOTIFY rssiMeasStateChanged)
     Q_PROPERTY(QString rssiMacAddress READ getRssiMacAddress WRITE setRssiMacAddress NOTIFY rssiMacAddressChanged)
 public:
@@ -42,7 +42,7 @@ public:
     void setInfo(QString info);
     QString getPosition();
     void updatePosition();
-    bool state();
+    bool trackingState();
     bool rssiMeasState();
     bool checkMacAddress(QString mac_address);
     void updateBeaconInfo(QString mac_address, qint16 rssi);

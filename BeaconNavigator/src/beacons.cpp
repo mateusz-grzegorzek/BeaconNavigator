@@ -90,7 +90,7 @@ void Beacons::updatePosition()
     Q_EMIT positionChanged();
 }
 
-bool Beacons::state()
+bool Beacons::trackingState()
 {
     return m_device->getScanState();
 }
@@ -189,8 +189,12 @@ void Beacons::startTracking()
     logMessage("Beacons::startTracking");
     m_mode_type = tracking;
     startScan();
-    startNavigate();
-    setInfo("Tracking...");
+    QThread::sleep(2);
+    if(trackingState())
+    {
+        startNavigate();
+        setInfo("Tracking...");
+    }
 }
 
 void Beacons::stopTracking()
@@ -209,6 +213,7 @@ void Beacons::startMeasuring(QString mac_address)
     //mac_address = "F6:C2:B1:B4:11:EC"; // TODO Remove after test's
     if(mac_address != "" && !validateMacAddress(mac_address))
     {
+        logMessage("Invalid mac address provided");
         setInfo("Invalid mac address provided");
         return;
     }
@@ -244,6 +249,7 @@ void Beacons::editBeacon(QString mac_address, QString position)
     mac_address = mac_address.toUpper();
     if(!validateMacAddress(mac_address))
     {
+        logMessage("Invalid mac address provided");
         setInfo("Invalid mac address provided");
         return;
     }

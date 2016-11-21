@@ -16,7 +16,6 @@ void LoggerInterface::logMessage(QString log)
     qDebug() << log;
     if(m_logger != Q_NULLPTR)
     {
-        qDebug() << "On mysli ze jest kurwa";
         m_logger->pushLog(log + "\r\n");
     }
 }

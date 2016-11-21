@@ -124,20 +124,20 @@ void Device::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
 {
     if (error == QBluetoothDeviceDiscoveryAgent::PoweredOffError)
     {
-        QString msg = "The Bluetooth adaptor is powered off, power it on before doing discovery.\n";
+        QString msg = "The Bluetooth adaptor is powered off, power it on before doing discovery.";
         m_beacons->setInfo(msg);
         logMessage(msg);
     }
 
     else if (error == QBluetoothDeviceDiscoveryAgent::InputOutputError)
     {
-        QString msg = "Writing or reading from the device resulted in an error.\n";
+        QString msg = "Writing or reading from the device resulted in an error.";
         m_beacons->setInfo(msg);
         logMessage(msg);
     }
     else
     {
-        QString msg = "An unknown error has occurred.\n";
+        QString msg = "An unknown error has occurred.";
         m_beacons->setInfo(msg);
         logMessage(msg);
     }

@@ -1,6 +1,4 @@
 #include "tcpserver.h"
-#include "qdebug.h"
-#include <QObject>
 
 void TcpServer::startServer()
 {
