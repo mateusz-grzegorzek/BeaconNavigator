@@ -5,16 +5,18 @@
 #include "tcpserver.h"
 #include <QTime>
 
-Beacons::Beacons()
+Beacons::Beacons():
+    m_mode_type(tracking)
 {
     setInfo(start_tracking_msg);
-    m_beacons.insert("F6:C2:B1:B4:11:EC", {{0,0}, 0});
-    m_beacons.insert("E3:6B:7D:9B:A2:82", {{3,2}, 0});
+    // Beacon's
+    //m_beacons.insert("F6:C2:B1:B4:11:EC", {{0,0}, 0});
+    //m_beacons.insert("E3:6B:7D:9B:A2:82", {{3,2}, 0});
 
-    // Fake beacons
-    m_beacons.insert("E3:6B:7D:9B:A2:83", {{-4,2}, 1.5});
-    m_beacons.insert("E3:6B:7D:9B:A2:84", {{-1,-2}, 2.3});
-    m_beacons.insert("E3:6B:7D:9B:A2:85", {{-5,1}, 3.1});
+    // Beacon;s Pro - 1 channel adv
+    m_beacons.insert("C3:FD:C2:D1:73:6E", {{3,1}, 1}); // czarny kabelek
+    m_beacons.insert("C4:2F:31:C4:3C:22", {{3,1}, 2}); // biały krótki kabelek
+    m_beacons.insert("C2:7A:4B:B8:C3:33", {{3,1}, 3}); // biały kabelek
 }
 
 void Beacons::setDevice(Device *device)

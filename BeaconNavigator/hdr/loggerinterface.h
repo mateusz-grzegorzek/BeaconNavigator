@@ -7,6 +7,7 @@
 class LoggerInterface
 {
 public:
+    LoggerInterface();
     virtual void setLogger(Logger* logger);
     void logMessage(QString log);
     Logger* m_logger;

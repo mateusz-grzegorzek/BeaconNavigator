@@ -5,23 +5,35 @@
 #include "device.h"
 #include "navigator.h"
 
+/**
+ * @brief TEST Beacon::BeaconTest function.
+ *
+ * Cases:
+ * 1. The beacon exists.
+ * 2. The beacon address is correct, but the beacon is not present in set.
+ * 3. The beacon address has wrong format.
+*/
 TEST(BeaconsTest, CheckMacAddress)
 {
     Beacons beacons;
 
-    ASSERT_TRUE(beacons.checkMacAddress("F6:C2:B1:B4:11:EC"));
-    ASSERT_TRUE(beacons.checkMacAddress("E3:6B:7D:9B:A2:82"));
+    ASSERT_TRUE(beacons.checkMacAddress("C3:FD:C2:D1:73:6E"));
     ASSERT_FALSE(beacons.checkMacAddress("E3:6B:7D:9B:A3:85"));
-    ASSERT_FALSE(beacons.checkMacAddress("E6:6C:7D:9B:A3:85"));
+    ASSERT_FALSE(beacons.checkMacAddress("E6A:6C:7D:9B:A3:85"));
 }
 
-TEST(BeaconsTest, UpdateDistance)
+/**
+ * @brief TEST Beacon::updateBeaconInfo function.
+ * Checks whether the function works properly.
+ *
+*/
+TEST(BeaconsTest, updateBeaconInfo)
 {
     qint16 rssi = -20;
     QList<QString> macAddresses =
     {
-        "F6:C2:B1:B4:11:EC",
-        "E3:6B:7D:9B:A2:82"
+        "C3:FD:C2:D1:73:6E",
+        "C4:2F:31:C4:3C:22"
     };
 
     Calculator calculator;
@@ -31,11 +43,15 @@ TEST(BeaconsTest, UpdateDistance)
     beacons.setCalculator(&calculator);
     for(QString mac_address: macAddresses)
     {
-        beacons.updateDistance(mac_address, rssi);
+        beacons.updateBeaconInfo(mac_address, rssi);
         ASSERT_DOUBLE_EQ(beacons.getDistance(mac_address), distance);
     }
 }
 
+/**
+ * @brief TEST Beacons::SimpleScan function.
+ * Checks whether the function works properly.
+ */
 TEST(BeaconsTest, SimpleScan)
 {
     Beacons beacons;
@@ -54,9 +70,13 @@ TEST(BeaconsTest, SimpleScan)
     ASSERT_FALSE(device.getScanState());
 }
 
+/**
+ * @brief TEST Beacon::ScanUpdateDistance function.
+ * Checks whether the function works properly.
+ */
 TEST(BeaconsTest, ScanUpdateDistance)
 {
-    QString macAddress = "E3:6B:7D:9B:A2:83";
+    QString macAddress = "C4:2F:31:C4:3C:22";
 
     Beacons beacons;
     Calculator calculator;
@@ -76,6 +96,15 @@ TEST(BeaconsTest, ScanUpdateDistance)
     ASSERT_FALSE(device.getScanState());
 }
 
+/**
+ * @brief TEST Calculator::SimpleDistCalc function.
+ * It checks whether the function correctly calculates distances from different RSSI values.
+ *
+ * Cases:
+ * 1. RSSI=0
+ * 2. RSSI=-10
+ * 3. RSSI=-100
+ */
 TEST(CalculatorTest, SimpleDistCalc)
 {
     Calculator calculator;
@@ -85,6 +114,15 @@ TEST(CalculatorTest, SimpleDistCalc)
     ASSERT_DOUBLE_EQ(calculator.calcDistance(-100), 10.3084295099762);
 }
 
+/**
+ * @brief TEST Calculator::MultilaterationCalc function.
+ * It checks whether the function correctly calculates estimated localization.
+ *
+ * Beacon's locatization:
+ * {0, 3}, 3.5}
+ * {4, -1}, 3.2}
+ * {-2, -3}, 2.2}
+*/
 TEST(CalculatorTest, MultilaterationCalc)
 {
     QList<DistanceToBeacon> distances =
@@ -101,6 +139,15 @@ TEST(CalculatorTest, MultilaterationCalc)
     ASSERT_DOUBLE_EQ(point.y, -1.0259374999999999);
 }
 
+/**
+ * @brief TEST Calculator:: WeightedArithMeanCalc function.
+ * It checks whether the function correctly calculates estimated localization.
+ *
+ * Beacon's locatization:
+ * {0, 3}, 3.5}
+ * {4, -1}, 3.2}
+ * {-2, -3}, 2.2}
+*/
 TEST(CalculatorTest, WeightedArithMeanCalc)
 {
     QList<DistanceToBeacon> distances =
