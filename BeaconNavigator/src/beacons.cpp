@@ -6,17 +6,17 @@
 #include <QTime>
 
 Beacons::Beacons():
-    m_mode_type(tracking)
+   m_estimation_type(multilateration), m_mode_type(tracking)
 {
     setInfo(start_tracking_msg);
     // Beacon's
     //m_beacons.insert("F6:C2:B1:B4:11:EC", {{0,0}, 0});
     //m_beacons.insert("E3:6B:7D:9B:A2:82", {{3,2}, 0});
 
-    // Beacon;s Pro - 1 channel adv
-    m_beacons.insert("C3:FD:C2:D1:73:6E", {{3,1}, 1}); // czarny kabelek
-    m_beacons.insert("C4:2F:31:C4:3C:22", {{3,1}, 2}); // biały krótki kabelek
-    m_beacons.insert("C2:7A:4B:B8:C3:33", {{3,1}, 3}); // biały kabelek
+    // Beacon;s Pro -one channel adv
+    m_beacons.insert("C3:FD:C2:D1:73:6E", {{0,0}, 1}); // czarny kabelek
+    m_beacons.insert("C4:2F:31:C4:3C:22", {{3,0}, 1}); // biały krótki kabelek
+    m_beacons.insert("C2:7A:4B:B8:C3:33", {{1,2}, 1}); // biały kabelek
 }
 
 void Beacons::setDevice(Device *device)
@@ -52,14 +52,28 @@ void Beacons::startNavigate()
 {
     logMessage("Beacons::startNavigate");
     m_navigator->start();
+#if(G_TEST == 0)
+    m_track_log_file = m_logger->createLogFile("position");
+    m_logger->openLogFile(m_track_log_file);
+#endif
 }
 
 void Beacons::stopNavigate()
 {
     logMessage("Beacons::stopNavigate");
+#if(G_TEST == 0)
+    m_logger->closeLogFile(m_track_log_file);
+#endif
     m_navigator->turnOff();
     m_navigator->quit();
     m_navigator->wait();
+}
+
+void Beacons::logPosition(Point point)
+{
+    QString log_position = m_logger->getTimeStamp();
+    log_position += ": " + QString::number(point.x) + "," + QString::number(point.y);
+    m_logger->saveLog(m_track_log_file, log_position);
 }
 
 void Beacons::exitApplication()
@@ -72,10 +86,34 @@ QString Beacons::getInfo()
     return m_info;
 }
 
+QString Beacons::getEstimationInfo()
+{
+    if(m_estimation_type == multilateration)
+    {
+        return "Multilateration";
+    }
+    else if(m_estimation_type == weightedArithMean)
+    {
+        return "Weighted Arith Mean";
+    }
+    return "Unknown";
+}
+
+estimation_type Beacons::getEstimationType()
+{
+    return m_estimation_type;
+}
+
 void Beacons::setInfo(QString info)
 {
     m_info = info;
     Q_EMIT infoChanged();
+}
+
+void Beacons::setEstimationInfo(estimation_type type)
+{
+    m_estimation_type = type;
+    Q_EMIT estimationInfoChanged();
 }
 
 QString Beacons::getPosition()
@@ -87,6 +125,8 @@ void Beacons::updatePosition()
 {
     Point position = m_navigator->getPosition();
     m_position = "Position: " + QString::number(position.x) + ", " + QString::number(position.y);
+    logPosition(position);
+    logMessage(m_position);
     Q_EMIT positionChanged();
 }
 
@@ -106,8 +146,10 @@ bool Beacons::checkMacAddress(QString mac_address)
     logMessage(mac_address);
     if(m_beacons.contains(mac_address))
     {
+        logMessage("My beacon founded!");
         return true;
     }
+    logMessage("Other device founded.");
     return false;
 }
 
@@ -143,18 +185,7 @@ void Beacons::updateRssi(QString mac_address, qint16 rssi)
         return;
     }
     logMessage("Beacons::updateRssi");
-    QTime current_time = QTime::currentTime();
-    QString log = current_time.toString() + ".";
-    int msec = current_time.msec();
-    if(msec < 100)
-    {
-        log += "0";
-        if(msec < 10)
-        {
-            log += "0";
-        }
-    }
-    log += QString::number(msec) + " ";
+    QString log = m_logger->getTimeStamp() + " ";
     if(m_rssi_mac_address == "")
     {
         log += mac_address + " ";
@@ -189,7 +220,7 @@ void Beacons::startTracking()
     logMessage("Beacons::startTracking");
     m_mode_type = tracking;
     startScan();
-    QThread::sleep(2);
+    QThread::sleep(1);
     if(trackingState())
     {
         startNavigate();
@@ -266,6 +297,21 @@ void Beacons::editBeacon(QString mac_address, QString position)
         setInfo("New Beacon inserted");
         m_beacons.insert(mac_address, {{x,y}, 0});
     }
+}
+
+void Beacons::changeEstimation()
+{
+    logMessage("Beacons::changeEstimation");
+    if(m_estimation_type == multilateration)
+    {
+        m_estimation_type = weightedArithMean;
+    }
+    else if(m_estimation_type == weightedArithMean)
+    {
+        m_estimation_type = multilateration;
+    }
+    logMessage(getEstimationInfo());
+    Q_EMIT estimationInfoChanged();
 }
 
 QString Beacons::getRssiMacAddress()

@@ -4,13 +4,28 @@
 void Navigator::run()
 {
     m_navigate = true;
+
     while(m_navigate)
     {
         QThread::sleep(2);
         if(!m_beacons->getDevice()->getScanState())
+        {
             break;
-        //m_position = m_calculator->calcMultilateration(m_beacons->getDistances());
-        m_position = m_calculator->calcWeightedArithMean(m_beacons->getDistances());
+        }
+        estimation_type type = m_beacons->getEstimationType();
+        if(type == multilateration)
+        {
+            m_position = m_calculator->calcMultilateration(m_beacons->getDistances());
+        }
+        else if(type == weightedArithMean)
+        {
+            m_position = m_calculator->calcWeightedArithMean(m_beacons->getDistances());
+        }
+        else
+        {
+            logMessage("ERROR: Unknown estimation chosen.");
+            m_position = {0,0};
+        }
         m_beacons->updatePosition();
     }
 }

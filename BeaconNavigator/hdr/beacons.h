@@ -18,6 +18,12 @@
 QT_FORWARD_DECLARE_CLASS (Device)
 QT_FORWARD_DECLARE_CLASS (Navigator)
 
+enum estimation_type
+{
+    multilateration,
+    weightedArithMean
+};
+
 enum mode_type
 {
     tracking,
@@ -28,6 +34,7 @@ class Beacons: public QObject, public LoggerInterface
 {
     Q_OBJECT
     Q_PROPERTY(QString info READ getInfo WRITE setInfo NOTIFY infoChanged)
+    Q_PROPERTY(QString estimationInfo READ getEstimationInfo NOTIFY estimationInfoChanged)
     Q_PROPERTY(QString position READ getPosition NOTIFY positionChanged)
     Q_PROPERTY(bool trackingState READ trackingState NOTIFY stateChanged)
     Q_PROPERTY(bool rssiMeasState READ rssiMeasState NOTIFY rssiMeasStateChanged)
@@ -39,7 +46,10 @@ public:
     void setNavigator(Navigator* navigator);
 
     QString getInfo();
+    QString getEstimationInfo();
+    estimation_type getEstimationType();
     void setInfo(QString info);
+    void setEstimationInfo(estimation_type type);
     QString getPosition();
     void updatePosition();
     bool trackingState();
@@ -55,11 +65,13 @@ public slots:
     void startMeasuring(QString mac_address);
     void stopMeasuring();
     void editBeacon(QString mac_address, QString position);
+    void changeEstimation();
     QString getRssiMacAddress();
     void setRssiMacAddress(QString mac_address);
     void exitApplication();
 Q_SIGNALS:
     void infoChanged();
+    void estimationInfoChanged();
     void positionChanged();
     void stateChanged();
     void rssiMeasStateChanged();
@@ -72,15 +84,18 @@ private:
     void stopScan();
     void startNavigate();
     void stopNavigate();
+    void logPosition(Point point);
 
     Device* m_device;
     Calculator* m_calculator;
     Navigator* m_navigator;
+    QFile* m_track_log_file;
 
     QMap<QString, DistanceToBeacon> m_beacons;
     QMutex m_mutex;
     QString m_info;
     QString m_position;
+    estimation_type m_estimation_type;
 
     mode_type m_mode_type;
     bool m_rssi_meas_state;

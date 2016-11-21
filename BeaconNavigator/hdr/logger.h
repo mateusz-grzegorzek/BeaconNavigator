@@ -12,6 +12,7 @@ class Logger: public QObject
     Q_OBJECT
 public:
     Logger(QString path_to_logs);
+    QString getTimeStamp();
     QFile* createLogFile(QString file_name);
     bool openLogFile(QFile* file);
     void closeLogFile(QFile* file);

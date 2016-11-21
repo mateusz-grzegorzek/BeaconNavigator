@@ -1,5 +1,6 @@
 #include "loggerinterface.h"
 #include <QDebug>
+#include <QTime>
 
 LoggerInterface::LoggerInterface()
 {

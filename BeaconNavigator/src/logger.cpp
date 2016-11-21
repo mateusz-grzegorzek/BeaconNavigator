@@ -13,17 +13,7 @@ Logger::Logger(QString path_to_logs)
     m_path_to_logs = path_to_logs + log_dir_name;
 }
 
-bool Logger::openLogFile(QFile* file)
-{
-    return file->open(QIODevice::WriteOnly | QIODevice::Text);
-}
-
-void Logger::closeLogFile(QFile* file)
-{
-    file->close();
-}
-
-QFile* Logger::createLogFile(QString file_name)
+QString Logger::getTimeStamp()
 {
     QTime current_time = QTime::currentTime();
     QString time_stamp = current_time.toString() + ".";
@@ -37,7 +27,22 @@ QFile* Logger::createLogFile(QString file_name)
         }
     }
     time_stamp += QString::number(msec);
-    QString log_file_name = time_stamp;
+    return time_stamp;
+}
+
+bool Logger::openLogFile(QFile* file)
+{
+    return file->open(QIODevice::WriteOnly | QIODevice::Text);
+}
+
+void Logger::closeLogFile(QFile* file)
+{
+    file->close();
+}
+
+QFile* Logger::createLogFile(QString file_name)
+{
+    QString log_file_name = getTimeStamp();
     if(file_name != "")
     {
         log_file_name +=  "_";

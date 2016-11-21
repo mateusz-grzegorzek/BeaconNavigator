@@ -4,6 +4,8 @@
 #include <QString>
 #include "logger.h"
 
+
+
 class LoggerInterface
 {
 public:

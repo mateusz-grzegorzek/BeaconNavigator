@@ -12,6 +12,28 @@ double Calculator::calcDistance(qint16 rssi) const
 Point Calculator::calcMultilateration(QList<DistanceToBeacon> distances)
 {
     logMessage("Calculator::calcMultilateration");
+    if(distances.length() < 3)
+    {
+        logMessage("ERROR: Less than three beacon's registered!");
+        return {0,0};
+    }
+    int num_of_dist_above_zero = 0;
+    for(DistanceToBeacon dtb : distances)
+    {
+        if(dtb.distance > 0)
+        {
+            num_of_dist_above_zero++;
+            if(num_of_dist_above_zero > 2)
+            {
+                break;
+            }
+        }
+    }
+    if(num_of_dist_above_zero < 3)
+    {
+        logMessage("ERROR Less than three beacon's founded!");
+        return {0,0};
+    }
     m_distances = distances;
     m_last_distance = m_distances.last();
     calcCMatrix();

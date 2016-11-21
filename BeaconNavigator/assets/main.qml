@@ -21,13 +21,24 @@ Rectangle {
     }
 
     Menu {
+        id: estimation_type
+        anchors.bottom: track.top
+        menuWidth: parent.width
+        menuHeight: (parent.height/15)
+        menuText: beacons.estimationInfo
+        onButtonClick: {
+            beacons.changeEstimation()
+        }
+    }
+
+    Menu {
         id: track
         anchors.bottom: beacon_register.top
         menuWidth: parent.width
         menuText: beacons.info
         onButtonClick: {
-            if (!beacons.state) {
-                beacons.startTracking();
+            if (!beacons.trackingState) {
+                beacons.startTracking()
             } else {
                 beacons.stopTracking()
             }
