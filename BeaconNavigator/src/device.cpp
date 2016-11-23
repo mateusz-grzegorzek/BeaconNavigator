@@ -52,6 +52,7 @@
 void Device::run()
 {
     logMessage("Device::turnOn");
+    m_discovery_agent_started = false;
     m_deviceScanState = true;
     while(m_deviceScanState)
     {
@@ -70,6 +71,8 @@ Device::Device(Beacons* beacons):
     connect(discoveryAgent, SIGNAL(error(QBluetoothDeviceDiscoveryAgent::Error)),
             this, SLOT(deviceScanError(QBluetoothDeviceDiscoveryAgent::Error)));
     connect(discoveryAgent, SIGNAL(finished()), this, SLOT(deviceScanFinished()));
+    connect(this, SIGNAL(discoveryAgentStartSucces()), m_beacons, SLOT(startNavigate()));
+    connect(this, SIGNAL(discoveryAgentStartError()), m_beacons, SLOT(stopScan()));
     qRegisterMetaType<QBluetoothDeviceDiscoveryAgent::Error>("QBluetoothDeviceDiscoveryAgent::Error");
 }
 
@@ -112,6 +115,7 @@ void Device::addDevice(const QBluetoothDeviceInfo &info)
     {
         m_beacons->updateBeaconInfo(info.address().toString(), info.rssi());
     }
+    discoveryAgentStarted();
 }
 
 void Device::deviceScanFinished()
@@ -124,7 +128,7 @@ void Device::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
 {
     if (error == QBluetoothDeviceDiscoveryAgent::PoweredOffError)
     {
-        QString msg = "The Bluetooth adaptor is powered off, power it on before doing discovery.";
+        QString msg = "The Bluetooth adapter is powered off, power it on before doing discovery.";
         m_beacons->setInfo(msg);
         logMessage(msg);
     }
@@ -143,4 +147,14 @@ void Device::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
     }
 
     m_deviceScanState = false;
+    Q_EMIT discoveryAgentStartError();
+}
+
+void Device::discoveryAgentStarted()
+{
+    if(!m_discovery_agent_started)
+    {
+        m_discovery_agent_started = true;
+        Q_EMIT discoveryAgentStartSucces();
+    }
 }

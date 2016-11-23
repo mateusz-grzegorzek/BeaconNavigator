@@ -27,7 +27,14 @@ enum estimation_type
 enum mode_type
 {
     tracking,
+    median_tracking,
     rssi_measuring
+};
+
+enum filter_type
+{
+    second_order,
+    third_order
 };
 
 class Beacons: public QObject, public LoggerInterface
@@ -36,6 +43,7 @@ class Beacons: public QObject, public LoggerInterface
     Q_PROPERTY(QString info READ getInfo WRITE setInfo NOTIFY infoChanged)
     Q_PROPERTY(QString estimationInfo READ getEstimationInfo NOTIFY estimationInfoChanged)
     Q_PROPERTY(QString position READ getPosition NOTIFY positionChanged)
+    Q_PROPERTY(QString rssi READ getRssi NOTIFY rssiChanged)
     Q_PROPERTY(bool trackingState READ trackingState NOTIFY stateChanged)
     Q_PROPERTY(bool rssiMeasState READ rssiMeasState NOTIFY rssiMeasStateChanged)
     Q_PROPERTY(QString rssiMacAddress READ getRssiMacAddress WRITE setRssiMacAddress NOTIFY rssiMacAddressChanged)
@@ -51,6 +59,7 @@ public:
     void setInfo(QString info);
     void setEstimationInfo(estimation_type type);
     QString getPosition();
+    QString getRssi();
     void updatePosition();
     bool trackingState();
     bool rssiMeasState();
@@ -61,6 +70,8 @@ public:
     Device *getDevice();
 public slots:
     void startTracking();
+    void startNavigate();
+    void stopScan();
     void stopTracking();
     void startMeasuring(QString mac_address);
     void stopMeasuring();
@@ -73,16 +84,20 @@ Q_SIGNALS:
     void infoChanged();
     void estimationInfoChanged();
     void positionChanged();
+    void rssiChanged();
     void stateChanged();
     void rssiMeasStateChanged();
     void rssiMacAddressChanged();
 private:
     void updateDistance(QString mac_address, qint16 rssi);
+    void medianTracking(QString mac_address, qint16& rssi);
     void updateRssi(QString mac_address, qint16 rssi);
     bool validateMacAddress(QString mac_address);
     void startScan();
-    void stopScan();
-    void startNavigate();
+    void loadBeacons();
+    void printRssi(qint16 rssi);
+
+    void createAndOpenRssiLogFile();
     void stopNavigate();
     void logPosition(Point point);
 
@@ -95,12 +110,22 @@ private:
     QMutex m_mutex;
     QString m_info;
     QString m_position;
+    QString m_rssi;
     estimation_type m_estimation_type;
 
     mode_type m_mode_type;
     bool m_rssi_meas_state;
     QString m_rssi_mac_address;
     QFile* m_rssi_log_file;
+
+    Point m_last_point;
+    double m_filter_strength;
+    filter_type m_filter_type;
+    QList<Point> m_last_points;
+    bool m_apply_filter;
+    Point applyFilter(Point point);
+
+    QMap<QString, QList<qint16>> m_median_cache;
 
     QString start_tracking_msg = "Start Tracking";
 };

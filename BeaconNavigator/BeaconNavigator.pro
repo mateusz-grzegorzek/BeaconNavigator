@@ -22,3 +22,6 @@ CONFIG(Desktop): DEFINES += G_TEST
 
 target.path = $$[QT_INSTALL_EXAMPLES]/bluetooth/BeaconNavigator
 INSTALLS += target
+
+DISTFILES += \
+    beacons.txt

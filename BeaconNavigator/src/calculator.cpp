@@ -44,7 +44,7 @@ Point Calculator::calcMultilateration(QList<DistanceToBeacon> distances)
 
 Point Calculator::calcWeightedArithMean(QList<DistanceToBeacon> distances)
 {
-    qDebug() << "Calculator::calcWeightedArithMean";
+    logMessage("Calculator::calcWeightedArithMean");
     m_distances = distances;
     Point point{0,0};
     double sum_of_distances = 0;

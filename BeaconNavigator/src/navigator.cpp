@@ -7,9 +7,10 @@ void Navigator::run()
 
     while(m_navigate)
     {
-        QThread::sleep(2);
+        QThread::sleep(1);
         if(!m_beacons->getDevice()->getScanState())
         {
+            logMessage("Navigator::Device Scan State Off");
             break;
         }
         estimation_type type = m_beacons->getEstimationType();

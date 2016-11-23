@@ -16,6 +16,14 @@ Rectangle {
         labelText: "Mac address:"
     }
 
+    Label{
+        id: rssi
+        anchors.top: mac_address.bottom
+        anchors.centerIn: parent
+        text: beacons.rssi
+        height: 200
+    }
+
     Menu {
         id: start
         anchors.bottom: return_to_main.top

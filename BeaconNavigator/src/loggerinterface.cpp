@@ -14,9 +14,11 @@ void LoggerInterface::setLogger(Logger *logger)
 
 void LoggerInterface::logMessage(QString log)
 {
-    qDebug() << log;
+    QString log_msg = m_logger->getTimeStamp();
+    log_msg += ": " + log;
+    qDebug() << log_msg;
     if(m_logger != Q_NULLPTR)
     {
-        m_logger->pushLog(log + "\r\n");
+        m_logger->pushLog(log_msg + "\r\n");
     }
 }

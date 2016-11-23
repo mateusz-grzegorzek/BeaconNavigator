@@ -65,11 +65,17 @@ public:
     void stopDeviceDiscovery();
     void turnOff();
     bool getScanState();
+Q_SIGNALS:
+    void discoveryAgentStartSucces();
+    void discoveryAgentStartError();
 private slots:
     void addDevice(const QBluetoothDeviceInfo&);
     void deviceScanFinished();
     void deviceScanError(QBluetoothDeviceDiscoveryAgent::Error);
 private:
+    void discoveryAgentStarted();
+
+    bool m_discovery_agent_started;
     Logger* m_logger;
     QBluetoothDeviceDiscoveryAgent *discoveryAgent;
     bool m_deviceScanState;

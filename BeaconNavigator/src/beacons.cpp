@@ -4,19 +4,24 @@
 #include <QDebug>
 #include "tcpserver.h"
 #include <QTime>
+#include <QtAlgorithms>
 
 Beacons::Beacons():
-   m_estimation_type(multilateration), m_mode_type(tracking)
+   m_estimation_type(multilateration),
+   m_mode_type(median_tracking),
+   m_filter_strength(0.5),
+   m_filter_type(third_order)
 {
     setInfo(start_tracking_msg);
     // Beacon's
     //m_beacons.insert("F6:C2:B1:B4:11:EC", {{0,0}, 0});
     //m_beacons.insert("E3:6B:7D:9B:A2:82", {{3,2}, 0});
 
-    // Beacon;s Pro -one channel adv
-    m_beacons.insert("C3:FD:C2:D1:73:6E", {{0,0}, 1}); // czarny kabelek
-    m_beacons.insert("C4:2F:31:C4:3C:22", {{3,0}, 1}); // biały krótki kabelek
-    m_beacons.insert("C2:7A:4B:B8:C3:33", {{1,2}, 1}); // biały kabelek
+    // Beacon's Pro -one channel adv
+    //m_beacons.insert("C3:FD:C2:D1:73:6E", {{0,0}, 0}); // czarny kabelek
+    //m_beacons.insert("C4:2F:31:C4:3C:22", {{3,0}, 0}); // biały krótki kabelek
+    //m_beacons.insert("C2:7A:4B:B8:C3:33", {{1,2}, 0}); // biały kabelek
+    loadBeacons();
 }
 
 void Beacons::setDevice(Device *device)
@@ -40,6 +45,45 @@ void Beacons::startScan()
     m_device->start();
 }
 
+void Beacons::loadBeacons()
+{
+    logMessage("Beacons::loadBeacons");
+    QFile file("/sdcard/Download/beacons.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        logMessage("Can't open beacons file!\n");
+        return;
+    }
+    QTextStream in(&file);
+    while (!in.atEnd())
+    {
+        QString line = in.readLine();
+        QStringList words = line.split(" ");
+        QString mac_address = words[0];
+        QStringList position = words[1].split(",");
+        double x = position[0].toDouble();
+        double y = position[1].toDouble();
+        logMessage(mac_address + ": " + QString::number(x) + "," + QString::number(y) + "\n" );
+        m_beacons.insert(mac_address, {{x,y}, 0});
+    }
+}
+
+void Beacons::printRssi(qint16 rssi)
+{
+    m_rssi = "Rssi = " + QString::number(rssi);
+    Q_EMIT rssiChanged();
+}
+
+void Beacons::createAndOpenRssiLogFile()
+{
+    m_rssi_log_file = m_logger->createLogFile(m_rssi_mac_address);
+    if(!m_logger->openLogFile(m_rssi_log_file))
+    {
+        logMessage("ERROR while opening file!\n");
+        return;
+    }
+}
+
 void Beacons::stopScan()
 {
     logMessage("Beacons::stopScan");
@@ -50,9 +94,16 @@ void Beacons::stopScan()
 
 void Beacons::startNavigate()
 {
+    if(m_mode_type == rssi_measuring)
+    {
+        return;
+    }
     logMessage("Beacons::startNavigate");
+    setInfo("Tracking...");
+    m_apply_filter = false;
     m_navigator->start();
 #if(G_TEST == 0)
+    createAndOpenRssiLogFile();
     m_track_log_file = m_logger->createLogFile("position");
     m_logger->openLogFile(m_track_log_file);
 #endif
@@ -63,6 +114,7 @@ void Beacons::stopNavigate()
     logMessage("Beacons::stopNavigate");
 #if(G_TEST == 0)
     m_logger->closeLogFile(m_track_log_file);
+    m_logger->closeLogFile(m_rssi_log_file);
 #endif
     m_navigator->turnOff();
     m_navigator->quit();
@@ -72,8 +124,49 @@ void Beacons::stopNavigate()
 void Beacons::logPosition(Point point)
 {
     QString log_position = m_logger->getTimeStamp();
-    log_position += ": " + QString::number(point.x) + "," + QString::number(point.y);
+    log_position += ": " + QString::number(point.x) + "," + QString::number(point.y) + "\n";
     m_logger->saveLog(m_track_log_file, log_position);
+}
+
+Point Beacons::applyFilter(Point point)
+{
+    logMessage("Beacons::applyFilter");
+    logMessage("filter_type = " + QString::number(m_filter_type));
+    if(m_filter_type == second_order)
+    {
+        if(m_apply_filter)
+        {
+            point.x = (point.x + m_last_point.x)*m_filter_strength;
+            point.y = (point.y + m_last_point.y)*m_filter_strength;
+        }
+        else
+        {
+            m_apply_filter = true;
+        }
+        m_last_point = point;
+    }
+    else if(m_filter_type == third_order)
+    {
+        if(m_last_points.length() < 3)
+        {
+            m_last_points.append(point);
+        }
+        if(m_last_points.length() > 2)
+        {
+            point.x = 0;
+            point.y = 0;
+            for(Point p: m_last_points)
+            {
+                point.x += p.x;
+                point.y += p.y;
+            }
+            point.x /= 3;
+            point.y /= 3;
+            m_last_points.erase(m_last_points.begin());
+        }
+
+    }
+    return point;
 }
 
 void Beacons::exitApplication()
@@ -121,9 +214,16 @@ QString Beacons::getPosition()
     return m_position;
 }
 
+QString Beacons::getRssi()
+{
+    return m_rssi;
+}
+
 void Beacons::updatePosition()
 {
     Point position = m_navigator->getPosition();
+    logMessage("Before Filter: " + QString::number(position.x) + ", " + QString::number(position.y));
+    position = applyFilter(position);
     m_position = "Position: " + QString::number(position.x) + ", " + QString::number(position.y);
     logPosition(position);
     logMessage(m_position);
@@ -155,27 +255,52 @@ bool Beacons::checkMacAddress(QString mac_address)
 
 void Beacons::updateBeaconInfo(QString mac_address, qint16 rssi)
 {
+    if(!checkMacAddress(mac_address))
+    {
+        return;
+    }
     if(m_mode_type == tracking)
     {
         updateDistance(mac_address, rssi);
     }
+    else if(m_mode_type == median_tracking)
+    {
+        medianTracking(mac_address, rssi);
+        updateDistance(mac_address, rssi);
+        updateRssi(mac_address, rssi);
+    }
     else if(m_mode_type == rssi_measuring)
     {
+        medianTracking(mac_address, rssi);
         updateRssi(mac_address, rssi);
+        printRssi(rssi);
     }
 }
 
 void Beacons::updateDistance(QString mac_address, qint16 rssi)
 {
     logMessage("Beacons::updateDistance");
-    if(!checkMacAddress(mac_address))
-    {
-        return;
-    }
     m_mutex.lock();
     m_beacons[mac_address].distance = m_calculator->calcDistance(rssi);
     m_mutex.unlock();
     logMessage("distance = " + QString::number(m_beacons[mac_address].distance));
+}
+
+void Beacons::medianTracking(QString mac_address, qint16& rssi)
+{
+    logMessage("Beacons::medianTracking");
+    if(m_median_cache[mac_address].length() < 3)
+    {
+        m_median_cache[mac_address].append(rssi);
+    }
+    if(m_median_cache[mac_address].length() > 2)
+    {
+        QList<qint16> rssi_cache = m_median_cache[mac_address];
+        qSort(rssi_cache);
+        rssi = rssi_cache[1];
+        logMessage("median_rssi = " + QString::number(rssi));
+        m_median_cache[mac_address].erase(m_median_cache[mac_address].begin());
+    }
 }
 
 void Beacons::updateRssi(QString mac_address, qint16 rssi)
@@ -218,14 +343,8 @@ Device *Beacons::getDevice()
 void Beacons::startTracking()
 {
     logMessage("Beacons::startTracking");
-    m_mode_type = tracking;
+    m_mode_type = median_tracking;
     startScan();
-    QThread::sleep(1);
-    if(trackingState())
-    {
-        startNavigate();
-        setInfo("Tracking...");
-    }
 }
 
 void Beacons::stopTracking()
@@ -239,9 +358,9 @@ void Beacons::stopTracking()
 void Beacons::startMeasuring(QString mac_address)
 {
     logMessage("Beacons::startMeasuring");
+    mac_address = "C2:7A:4B:B8:C3:33";  // TODO Remove after test's
     logMessage("mac_address: " + mac_address);
     mac_address = mac_address.toUpper();
-    //mac_address = "F6:C2:B1:B4:11:EC"; // TODO Remove after test's
     if(mac_address != "" && !validateMacAddress(mac_address))
     {
         logMessage("Invalid mac address provided");
@@ -253,12 +372,7 @@ void Beacons::startMeasuring(QString mac_address)
     m_rssi_meas_state = true;
     Q_EMIT rssiMeasStateChanged();
     setInfo("Stop Measure");
-    m_rssi_log_file = m_logger->createLogFile(m_rssi_mac_address);
-    if(!m_logger->openLogFile(m_rssi_log_file))
-    {
-        qDebug() << "ERROR while opening file!\n";
-        return;
-    }
+    createAndOpenRssiLogFile();
     startScan();
 }
 
