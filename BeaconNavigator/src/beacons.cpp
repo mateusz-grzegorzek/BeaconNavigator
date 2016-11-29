@@ -42,6 +42,7 @@ void Beacons::setNavigator(Navigator *navigator)
 void Beacons::startScan()
 {
     logMessage("Beacons::startScan");
+    m_median_cache.clear();
     m_device->start();
 }
 
@@ -70,7 +71,9 @@ void Beacons::loadBeacons()
 
 void Beacons::printRssi(qint16 rssi)
 {
-    m_rssi = "Rssi = " + QString::number(rssi);
+    m_rssi = "Rssi = " + QString::number(rssi) + "\n";
+    double distance = m_calculator->calcDistance(rssi);
+    m_rssi += "Distance = " + QString::number(distance);
     Q_EMIT rssiChanged();
 }
 
@@ -101,6 +104,7 @@ void Beacons::startNavigate()
     logMessage("Beacons::startNavigate");
     setInfo("Tracking...");
     m_apply_filter = false;
+    m_last_points.clear();
     m_navigator->start();
 #if(G_TEST == 0)
     createAndOpenRssiLogFile();
@@ -358,7 +362,7 @@ void Beacons::stopTracking()
 void Beacons::startMeasuring(QString mac_address)
 {
     logMessage("Beacons::startMeasuring");
-    mac_address = "C2:7A:4B:B8:C3:33";  // TODO Remove after test's
+    //mac_address = "EB:0B:06:2E:DC:84";  // TODO Remove after test's
     logMessage("mac_address: " + mac_address);
     mac_address = mac_address.toUpper();
     if(mac_address != "" && !validateMacAddress(mac_address))

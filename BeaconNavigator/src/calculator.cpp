@@ -4,8 +4,29 @@
 
 double Calculator::calcDistance(qint16 rssi) const
 {
-    double power = (-rssi - 30 + 28 - 20 * log10(f)) / N;
-    double path = pow(10, power);
+    double A, t, y0;
+    if(rssi == 65)
+    {
+        return 1;
+    }
+    if(rssi > -65)
+    {
+        A = 20.03;
+        t = -0.766;
+        y0 = -70.43;
+    }
+    else
+    {
+        A = -19.8;
+        t = 7.806;
+        y0 = -42.45;
+    }
+    double tmp = ((double)rssi - y0) / A;
+    double path = log(tmp) * t;
+    if(path < 0)
+    {
+        path = 0.01;
+    }
     return path;
 }
 
