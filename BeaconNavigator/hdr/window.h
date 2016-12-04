@@ -68,13 +68,17 @@ public slots:
     void navigatorStateChanged(bool state);
 private slots:
     void navigatorButtonClicked();
+    void estimationButtonClicked();
     void quitButtonClicked();
 private:
     QPushButton* m_navigator_button;
+    QPushButton* m_estimation_button;
     QPushButton* m_quit_button;
     RenderArea* m_render_area;
     Beacons* m_beacons;
 
+    QString m_multilateration_text = "Multilateration";
+    QString m_weighted_arith_mean_text = "Weighted Arith Mean";
     QString m_start_navigating_text = "Start Navigating";
     QString m_stop_navigating_text = "Stop Navigating";
     QString m_quit_text = "Quit";

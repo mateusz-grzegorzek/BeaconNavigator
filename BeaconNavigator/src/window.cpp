@@ -67,18 +67,23 @@ void Window::initRenderArea(){
     m_render_area = new RenderArea;
     m_navigator_button = new QPushButton(m_start_navigating_text, this);
     m_navigator_button->setMinimumHeight(200);
+    m_estimation_button = new QPushButton(m_multilateration_text, this);
+    m_estimation_button->setMinimumHeight(100);
     m_quit_button = new QPushButton(m_quit_text, this);
     m_quit_button->setMinimumHeight(200);
 
     connect(m_navigator_button, SIGNAL(clicked()),
             this, SLOT(navigatorButtonClicked()));
+    connect(m_estimation_button, SIGNAL(clicked()),
+            this, SLOT(estimationButtonClicked()));
     connect(m_quit_button, SIGNAL(clicked()),
             this, SLOT(quitButtonClicked()));
 
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->addWidget(m_render_area, 0, 0, 1, 4);
     mainLayout->addWidget(m_navigator_button, 1, 0, 1, 4);
-    mainLayout->addWidget(m_quit_button, 2, 0, 1, 4);
+    mainLayout->addWidget(m_estimation_button, 2, 0, 1, 4);
+    mainLayout->addWidget(m_quit_button, 3, 0, 1, 4);
     setLayout(mainLayout);
 
     setWindowTitle(tr("Beacon Navigator"));
@@ -119,8 +124,7 @@ void Window::initFlat(){
     m_render_area->calcFlatAspectRatio();
 }
 
-void Window::navigatorStateChanged(bool state)
-{
+void Window::navigatorStateChanged(bool state){
     if(state){
         m_navigator_button->setText(m_stop_navigating_text);
     } else {
@@ -134,6 +138,16 @@ void Window::navigatorButtonClicked(){
         m_beacons->startNavigation();
     } else {
         m_beacons->stopNavigation();
+    }
+}
+
+void Window::estimationButtonClicked(){
+    Logger::logMessage("Window::estimationButtonClicked");
+    m_beacons->changeEstimation();
+    if(m_beacons->getEstimationType() == multilateration){
+        m_estimation_button->setText(m_multilateration_text);
+    } else {
+        m_estimation_button->setText(m_weighted_arith_mean_text);
     }
 }
 

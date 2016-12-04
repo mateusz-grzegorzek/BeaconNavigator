@@ -5,6 +5,8 @@
 #include "beacons.h"
 
 Navigator::Navigator(Beacons *beacons): m_beacons(beacons){
+    connect(this, SIGNAL(positionChanged(Point)), m_beacons, SLOT(updatePosition(Point)));
+    qRegisterMetaType<Point>("Point");
 }
 
 void Navigator::run(){
@@ -27,7 +29,7 @@ void Navigator::run(){
             Logger::logMessage("ERROR: Unknown estimation chosen.");
         }
         if(succes){
-            m_beacons->updatePosition(position);
+            Q_EMIT positionChanged(position);
         }
     }
 }

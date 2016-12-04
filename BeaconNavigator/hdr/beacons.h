@@ -30,8 +30,8 @@ public:
 
     void updateBeaconInfo(QString mac_address, qint16 rssi);
     bool checkMacAddress(const QString& mac_address);
-    void updatePosition(Point position);
 
+    void changeEstimation();
     estimation_type getEstimationType();
 
     QList<DistanceToBeacon> getDistances();
@@ -39,7 +39,7 @@ public:
 public slots:
     void deviceStarted();
     void deviceFailed();
-    void changeEstimation();
+    void updatePosition(Point position);
 Q_SIGNALS:
     void positionChanged(Point);
     void showPosition(bool);

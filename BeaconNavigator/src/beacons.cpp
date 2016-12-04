@@ -26,13 +26,15 @@ void Beacons::loadBeacons(){
     QTextStream in(&beacons_file);
     while (!in.atEnd()){
         QString line = in.readLine();
-        QStringList words = line.split(" ");
-        QString mac_address = words[0];
-        QStringList position = words[1].split(",");
-        double x = position[0].toDouble();
-        double y = position[1].toDouble();
-        Logger::logMessage(mac_address + ": " + QString::number(x) + "," + QString::number(y));
-        m_beacons.insert(mac_address, {{x,y}, 0});
+        if(line.length() > 0){
+            QStringList words = line.split(" ");
+            QString mac_address = words[0];
+            QStringList position = words[1].split(",");
+            double x = position[0].toDouble();
+            double y = position[1].toDouble();
+            Logger::logMessage(mac_address + ": " + QString::number(x) + "," + QString::number(y));
+            m_beacons.insert(mac_address, {{x,y}, 0});
+        }
     }
 }
 
@@ -105,8 +107,6 @@ void Beacons::updateDistance(QString mac_address, qint16 rssi){
     m_beacons_mutex.unlock();
     Logger::logMessage(mac_address + "->distance = " + QString::number(m_beacons[mac_address].distance));
 }
-
-
 
 void Beacons::changeEstimation(){
     Logger::logMessage("Beacons::changeEstimation");

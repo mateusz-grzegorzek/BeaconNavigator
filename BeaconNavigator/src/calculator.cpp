@@ -17,21 +17,18 @@ int Calculator::s_median_cache_size = 3;
 double Calculator::calcDistance(const qint16& rssi){
     Logger::logMessage("Calculator::calcDistance");
     double A, t, y0;
-    if(rssi == 65){
-        return 1;
-    }
-    if(rssi > -65){
+    if(rssi > -65){ // close
         A = 20.03;
         t = -0.766;
         y0 = -70.43;
-    } else {
+    } else { // away
         A = -19.8;
         t = 7.806;
         y0 = -42.45;
     }
     double tmp = ((double)rssi - y0) / A;
     double path = log(tmp) * t;
-    if(path < 0){
+    if(path < 0){ // very close
         path = 0.01;
     }
     return path;
@@ -70,9 +67,10 @@ bool Calculator::calcWeightedArithMean(Point& position, QList<DistanceToBeacon> 
     Point point{0,0};
     double sum_of_distances = 0;
     for(DistanceToBeacon distance: s_distances){
-        point.x += distance.point.x*distance.distance;
-        point.y += distance.point.y*distance.distance;
-        sum_of_distances += distance.distance;
+        double weight = (1/distance.distance);
+        point.x += distance.point.x*weight;
+        point.y += distance.point.y*weight;
+        sum_of_distances += weight;
     }
     point.x /= sum_of_distances;
     point.y /= sum_of_distances;

@@ -88,7 +88,7 @@ void RenderArea::calcFlatAspectRatio(){
 
 #ifdef SAMSUNG_S5_NEO
     screen_width -= 50;
-    screen_height -= 620;
+    screen_height -= 720;
 #endif
 
     double aspect_ratio_width;
@@ -116,6 +116,7 @@ void RenderArea::calcFlatAspectRatio(){
 void RenderArea::setPosition(const Point &position){
     m_position.setX(position.x);
     m_position.setY(position.y);
+    Logger::logMessage("RenderArea::setPosition=" + QString::number(m_position.x()) + "," + QString::number(m_position.y()));
     update();
 }
 
@@ -127,17 +128,18 @@ void RenderArea::showPosition(bool show){
 void RenderArea::paintEvent(QPaintEvent *){
     Logger::logMessage("RenderArea::paintEvent");
     QPainter painter(this);
+    painter.translate(10, 10);
 
     for(Wall& wall: m_walls){
         QPen pen( Qt::black );
-        pen.setWidth( 5 );
+        pen.setWidth( 8 );
         painter.setPen(pen);
         painter.drawLine(wall.start*m_aspect_ratio, wall.end*m_aspect_ratio);
     }
 
     if(m_show_position){
-        QPen pen( Qt::black );
-        pen.setWidth( 5 );
+        QPen pen( Qt::red );
+        pen.setWidth( 7 );
         painter.setPen(pen);
         painter.drawEllipse(QPoint(m_position.x()*100*m_aspect_ratio, m_position.y()*100*m_aspect_ratio), 50, 50);
     }
