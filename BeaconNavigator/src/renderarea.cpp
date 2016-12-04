@@ -49,16 +49,73 @@
 ****************************************************************************/
 
 #include "renderarea.h"
-#include <QDebug>
+#include "point.h"
+#include "logger.h"
 #include <QPainter>
-#include <QPoint>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QDebug>
+
+#define SAMSUNG_S5_NEO
 
 RenderArea::RenderArea(QWidget *parent)
     : QWidget(parent){
 }
 
+void RenderArea::addWall(double x1, double y1, double x2, double y2){
+    Wall wall;
+    wall.start = {x1, y1};
+    wall.end = {x2, y2};
+    m_walls.append(wall);
+}
+
+void RenderArea::calcFlatAspectRatio(){
+    double flat_width = 0;
+    double flat_height = 0;
+    for(Wall& wall: m_walls){
+        double x = wall.start.x();
+        double y = wall.start.y();
+        if(flat_width < x){
+            flat_width = x;
+        }
+        if(flat_height < y){
+            flat_height = y;
+        }
+    }
+    QRect rec = QApplication::desktop()->screenGeometry();
+    double screen_width = rec.width();
+    double screen_height = rec.height();
+
+#ifdef SAMSUNG_S5_NEO
+    screen_width -= 50;
+    screen_height -= 620;
+#endif
+
+    double aspect_ratio_width;
+    double aspect_ratio_height;
+
+    if(screen_width > flat_width){
+        aspect_ratio_width = screen_width/flat_width;
+    } else {
+        aspect_ratio_width = flat_width/screen_width;
+    }
+
+    if(screen_height > flat_height){
+        aspect_ratio_height = screen_height/flat_height;
+    } else {
+        aspect_ratio_height = flat_height/screen_height;
+    }
+
+    if(aspect_ratio_width > aspect_ratio_height){
+        m_aspect_ratio = aspect_ratio_height;
+    } else {
+        m_aspect_ratio = aspect_ratio_width;
+    }
+}
+
 void RenderArea::setPosition(const Point &position){
-    m_position = position;
+    m_position.setX(position.x);
+    m_position.setY(position.y);
     update();
 }
 
@@ -68,15 +125,20 @@ void RenderArea::showPosition(bool show){
 }
 
 void RenderArea::paintEvent(QPaintEvent *){
-    qDebug() << "RenderArea::paintEvent";
+    Logger::logMessage("RenderArea::paintEvent");
     QPainter painter(this);
-    if(m_show_position){
-        painter.translate(20, 20);
-        qDebug() << "RenderArea::m_show_position";
-        painter.setPen(Qt::red);
-        painter.drawEllipse(QPoint(10,20), 40, 40);
+
+    for(Wall& wall: m_walls){
+        QPen pen( Qt::black );
+        pen.setWidth( 5 );
+        painter.setPen(pen);
+        painter.drawLine(wall.start*m_aspect_ratio, wall.end*m_aspect_ratio);
     }
-    painter.setPen(Qt::blue);
-    painter.setFont(QFont("Arial", 30));
-    painter.drawText(rect(), Qt::AlignCenter, "Qt");
+
+    if(m_show_position){
+        QPen pen( Qt::black );
+        pen.setWidth( 5 );
+        painter.setPen(pen);
+        painter.drawEllipse(QPoint(m_position.x()*100*m_aspect_ratio, m_position.y()*100*m_aspect_ratio), 50, 50);
+    }
 }

@@ -1,7 +1,6 @@
 #ifndef BEACONS_H
 #define BEACONS_H
 
-#include "point.h"
 #include "distancetobeacon.h"
 #include <QObject>
 #include <QFile>
@@ -44,6 +43,7 @@ public slots:
 Q_SIGNALS:
     void positionChanged(Point);
     void showPosition(bool);
+    void navigatorStateChanged(bool);
 private:
     void loadBeacons();
     void updateDistance(QString mac_address, qint16 rssi);

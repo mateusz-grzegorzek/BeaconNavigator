@@ -1,7 +1,6 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
-#include "point.h"
 #include "distancetobeacon.h"
 #include <QObject>
 #include <QList>
@@ -25,15 +24,16 @@ private:
     static void calcBMatrix(); // b
     static bool calcPosition(Point &position);
 
-    static QList<DistanceToBeacon> m_distances;
-    static DistanceToBeacon m_last_distance;
+    static QList<DistanceToBeacon> s_distances;
+    static DistanceToBeacon s_last_distance;
 
     static matrix c_matrix;
     static matrix cat_matrix;
     static matrix b_matrix;
 
-    static QList<Point> m_last_points;
-    static QMap<QString, QList<qint16>> m_median_cache;
+    static QList<Point> s_last_points;
+    static QMap<QString, QList<qint16>> s_median_cache;
+    static int s_median_cache_size;
 };
 
 #endif // CALCULATOR_H

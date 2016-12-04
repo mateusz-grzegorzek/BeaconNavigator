@@ -13,7 +13,9 @@ SOURCES += src/*.cpp
 
 OTHER_FILES += assets/*.qml
 
-HEADERS += hdr/*.h
+HEADERS += hdr/*.h \
+    hdr/point.h \
+    hdr/wall.h
 
 RESOURCES += \
     resources.qrc
@@ -25,4 +27,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/bluetooth/BeaconNavigator
 INSTALLS += target
 
 DISTFILES += \
-    beacons.txt
+    beacons.txt \
+    flat.txt

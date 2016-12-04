@@ -63,6 +63,9 @@ public:
     Window();
     void initRenderArea();
     void initBeacons();
+    void initFlat();
+public slots:
+    void navigatorStateChanged(bool state);
 private slots:
     void navigatorButtonClicked();
     void quitButtonClicked();
@@ -71,6 +74,10 @@ private:
     QPushButton* m_quit_button;
     RenderArea* m_render_area;
     Beacons* m_beacons;
+
+    QString m_start_navigating_text = "Start Navigating";
+    QString m_stop_navigating_text = "Stop Navigating";
+    QString m_quit_text = "Quit";
 };
 
 #endif // WINDOW_H

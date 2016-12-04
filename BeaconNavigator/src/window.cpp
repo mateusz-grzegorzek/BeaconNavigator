@@ -50,21 +50,25 @@
 
 #include "renderarea.h"
 #include "window.h"
-#include <QDebug>
+#include "logger.h"
 #include "beacons.h"
 #include <QPushButton>
 #include <QGridLayout>
 #include <QCoreApplication>
+#include <QTextStream>
 
 Window::Window(){
     initRenderArea();
     initBeacons();
+    initFlat();
 }
 
 void Window::initRenderArea(){
     m_render_area = new RenderArea;
-    m_navigator_button = new QPushButton("Start Navigating", this);
-    m_quit_button = new QPushButton("Quit", this);
+    m_navigator_button = new QPushButton(m_start_navigating_text, this);
+    m_navigator_button->setMinimumHeight(200);
+    m_quit_button = new QPushButton(m_quit_text, this);
+    m_quit_button->setMinimumHeight(200);
 
     connect(m_navigator_button, SIGNAL(clicked()),
             this, SLOT(navigatorButtonClicked()));
@@ -88,10 +92,44 @@ void Window::initBeacons(){
             m_render_area, SLOT(setPosition(Point)));
     connect(m_beacons, SIGNAL(showPosition(bool)),
             m_render_area, SLOT(showPosition(bool)));
+    connect(m_beacons, SIGNAL(navigatorStateChanged(bool)), this, SLOT(navigatorStateChanged(bool)));
+}
+
+void Window::initFlat(){
+    QFile flat_file("/sdcard/Download/flat.txt");
+    if (!flat_file.open(QIODevice::ReadOnly | QIODevice::Text)){
+        Logger::logMessage("Can't open flat file!");
+        return;
+    }
+    QTextStream in(&flat_file);
+    Logger::logMessage("Flat: ");
+    while (!in.atEnd()){
+        QString line = in.readLine();
+        QStringList words = line.split(" ");
+        QStringList first_position = words[0].split(",");
+        double x1 = first_position[0].toDouble();
+        double y1 = first_position[1].toDouble();
+        QStringList second_position = words[1].split(",");
+        double x2 = second_position[0].toDouble();
+        double y2 = second_position[1].toDouble();
+        Logger::logMessage(QString::number(x1) + "," + QString::number(y1) + " " +
+                           QString::number(x2) + "," + QString::number(y2));
+        m_render_area->addWall(x1, y1, x2, y2);
+    }
+    m_render_area->calcFlatAspectRatio();
+}
+
+void Window::navigatorStateChanged(bool state)
+{
+    if(state){
+        m_navigator_button->setText(m_stop_navigating_text);
+    } else {
+        m_navigator_button->setText(m_start_navigating_text);
+    }
 }
 
 void Window::navigatorButtonClicked(){
-    qDebug() << "Window::navigatorButtonClicked";
+    Logger::logMessage("Window::navigatorButtonClicked");
     if(!m_beacons->isNavigating()){
         m_beacons->startNavigation();
     } else {
@@ -100,5 +138,6 @@ void Window::navigatorButtonClicked(){
 }
 
 void Window::quitButtonClicked(){
+    Logger::logMessage("Window::quitButtonClicked");
     QCoreApplication::quit();
 }

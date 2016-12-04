@@ -3,15 +3,16 @@
 #include <QtAlgorithms>
 #include <QtMath>
 
-QList<DistanceToBeacon> Calculator::m_distances;
-DistanceToBeacon Calculator::m_last_distance;
+QList<DistanceToBeacon> Calculator::s_distances;
+DistanceToBeacon Calculator::s_last_distance;
 
 matrix Calculator::c_matrix;
 matrix Calculator::cat_matrix;
 matrix Calculator::b_matrix;
 
-QList<Point> Calculator::m_last_points;
-QMap<QString, QList<qint16>> Calculator::m_median_cache;
+QList<Point> Calculator::s_last_points;
+QMap<QString, QList<qint16>> Calculator::s_median_cache;
+int Calculator::s_median_cache_size = 3;
 
 double Calculator::calcDistance(const qint16& rssi){
     Logger::logMessage("Calculator::calcDistance");
@@ -55,8 +56,8 @@ bool Calculator::calcMultilateration(Point &position, QList<DistanceToBeacon> di
         Logger::logMessage("ERROR Less than three beacon's founded!");
         return false;
     }
-    m_distances = distances;
-    m_last_distance = m_distances.last();
+    s_distances = distances;
+    s_last_distance = s_distances.last();
     calcCMatrix();
     calcCATMatrix();
     calcBMatrix();
@@ -65,10 +66,10 @@ bool Calculator::calcMultilateration(Point &position, QList<DistanceToBeacon> di
 
 bool Calculator::calcWeightedArithMean(Point& position, QList<DistanceToBeacon> distances){
     Logger::logMessage("Calculator::calcWeightedArithMean");
-    m_distances = distances;
+    s_distances = distances;
     Point point{0,0};
     double sum_of_distances = 0;
-    for(DistanceToBeacon distance: m_distances){
+    for(DistanceToBeacon distance: s_distances){
         point.x += distance.point.x*distance.distance;
         point.y += distance.point.y*distance.distance;
         sum_of_distances += distance.distance;
@@ -81,8 +82,8 @@ bool Calculator::calcWeightedArithMean(Point& position, QList<DistanceToBeacon> 
 
 void Calculator::calcCMatrix(){
     double a = 0, b = 0, d = 0;
-    Point last_point = m_last_distance.point;
-    for(DistanceToBeacon distance: m_distances){
+    Point last_point = s_last_distance.point;
+    for(DistanceToBeacon distance: s_distances){
         Point point = distance.point;
         a += (point.x - last_point.x)*(point.x - last_point.x);
         b += (point.x - last_point.x)*(point.y - last_point.y);
@@ -100,12 +101,12 @@ void Calculator::calcCMatrix(){
 
 void Calculator::calcCATMatrix(){
     cat_matrix.clear();
-    Point last_point = m_last_distance.point;
-    for(DistanceToBeacon distance: m_distances){
+    Point last_point = s_last_distance.point;
+    for(DistanceToBeacon distance: s_distances){
         Point point = distance.point;
         cat_matrix.append(c_matrix[0] * 2 * (point.x - last_point.x) + c_matrix[1] * 2 * (point.y - last_point.y));
     }
-    for(DistanceToBeacon distance: m_distances){
+    for(DistanceToBeacon distance: s_distances){
         Point point = distance.point;
         cat_matrix.append(c_matrix[1] * 2 * (point.x - last_point.x) + c_matrix[2] * 2 * (point.y - last_point.y));
     }
@@ -113,12 +114,12 @@ void Calculator::calcCATMatrix(){
 
 void Calculator::calcBMatrix(){
     b_matrix.clear();
-    Point last_point = m_last_distance.point;
-    for(DistanceToBeacon distance: m_distances){
+    Point last_point = s_last_distance.point;
+    for(DistanceToBeacon distance: s_distances){
         Point point = distance.point;
         b_matrix.append(point.x*point.x - last_point.x*last_point.x
                         + point.y*point.y - last_point.y*last_point.y
-                        + m_last_distance.distance*m_last_distance.distance
+                        + s_last_distance.distance*s_last_distance.distance
                         - distance.distance*distance.distance);
     }
 }
@@ -141,32 +142,32 @@ bool Calculator::calcPosition(Point& position){
 
 void Calculator::applyFilter(Point& point){
     Logger::logMessage("Calculator::applyFilter");
-    if(m_last_points.length() < 3){
-        m_last_points.append(point);
+    if(s_last_points.length() < 3){
+        s_last_points.append(point);
     }
-    if(m_last_points.length() > 2){
+    if(s_last_points.length() > 2){
         point.x = 0;
         point.y = 0;
-        for(Point& p: m_last_points){
+        for(Point& p: s_last_points){
             point.x += p.x;
             point.y += p.y;
         }
         point.x /= 3;
         point.y /= 3;
-        m_last_points.erase(m_last_points.begin());
+        s_last_points.erase(s_last_points.begin());
     }
 }
 
 void Calculator::calcMedian(const QString& mac_address, qint16& rssi){
     Logger::logMessage("Calculator::calcMedian");
-    if(m_median_cache[mac_address].length() < 3){
-        m_median_cache[mac_address].append(rssi);
+    if(s_median_cache[mac_address].length() < s_median_cache_size){
+        s_median_cache[mac_address].append(rssi);
     }
-    if(m_median_cache[mac_address].length() > 2){
-        QList<qint16> rssi_cache = m_median_cache[mac_address];
+    if(s_median_cache[mac_address].length() >= s_median_cache_size){
+        QList<qint16> rssi_cache = s_median_cache[mac_address];
         qSort(rssi_cache);
         rssi = rssi_cache[1];
         Logger::logMessage("median_rssi = " + QString::number(rssi));
-        m_median_cache[mac_address].erase(m_median_cache[mac_address].begin());
+        s_median_cache[mac_address].erase(s_median_cache[mac_address].begin());
     }
 }

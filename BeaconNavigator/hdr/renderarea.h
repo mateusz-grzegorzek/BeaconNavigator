@@ -51,14 +51,19 @@
 #ifndef RENDERAREA_H
 #define RENDERAREA_H
 
-#include <QWidget>
 #include "point.h"
+#include "wall.h"
+#include <QWidget>
+#include <QList>
+#include <QPointF>
 
 class RenderArea : public QWidget
 {
     Q_OBJECT
 public:
     RenderArea(QWidget *parent = 0);
+    void addWall(double x1, double y1, double x2, double y2);
+    void calcFlatAspectRatio();
 public slots:
     void showPosition(bool show);
     void setPosition(const Point& position);
@@ -66,7 +71,9 @@ protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 private:
     bool m_show_position = false;
-    Point m_position;
+    QPointF m_position;
+    QList<Wall> m_walls;
+    double m_aspect_ratio;
 };
 
 #endif // RENDERAREA_H

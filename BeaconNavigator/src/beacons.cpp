@@ -41,6 +41,20 @@ void Beacons::startNavigation(){
     m_device->start();
 }
 
+void Beacons::deviceStarted(){
+    #if(G_TEST == 0)
+    m_rssi_log_file = Logger::createAndOpenLogFile("rssi");
+    m_track_log_file = Logger::createAndOpenLogFile("pos");
+    #endif
+    m_navigator->start();
+    Q_EMIT showPosition(true);
+    Q_EMIT navigatorStateChanged(true);
+}
+
+void Beacons::deviceFailed(){
+    Logger::logMessage("Beacons::deviceFailed"); //TODO something
+}
+
 bool Beacons::isNavigating(){
     return m_navigator->isNavigating();
 }
@@ -57,18 +71,8 @@ void Beacons::stopNavigation(){
     m_navigator->turnOff();
     m_navigator->quit();
     m_navigator->wait();
-    showPosition(false);
-}
-
-estimation_type Beacons::getEstimationType(){
-    return m_estimation_type;
-}
-
-void Beacons::updatePosition(Point position){
-    QString msg_position =  QString::number(position.x) + "," + QString::number(position.y);
-    Logger::saveLogToFile(m_track_log_file, msg_position);
-    Logger::logMessage("Position: " + msg_position);
-    Q_EMIT positionChanged(position);
+    Q_EMIT showPosition(false);
+    Q_EMIT navigatorStateChanged(false);
 }
 
 void Beacons::updateBeaconInfo(QString mac_address, qint16 rssi){
@@ -88,6 +92,13 @@ bool Beacons::checkMacAddress(const QString& mac_address){
     return false;
 }
 
+void Beacons::updatePosition(Point position){
+    QString msg_position =  QString::number(position.x) + "," + QString::number(position.y);
+    Logger::saveLogToFile(m_track_log_file, msg_position);
+    Logger::logMessage("Position: " + msg_position);
+    Q_EMIT positionChanged(position);
+}
+
 void Beacons::updateDistance(QString mac_address, qint16 rssi){
     m_beacons_mutex.lock();
     m_beacons[mac_address].distance = Calculator::calcDistance(rssi);
@@ -95,26 +106,7 @@ void Beacons::updateDistance(QString mac_address, qint16 rssi){
     Logger::logMessage(mac_address + "->distance = " + QString::number(m_beacons[mac_address].distance));
 }
 
-QList<DistanceToBeacon> Beacons::getDistances(){
-    return m_beacons.values();
-}
 
-Device *Beacons::getDevice(){
-    return m_device;
-}
-
-void Beacons::deviceStarted(){
-    #if(G_TEST == 0)
-    m_rssi_log_file = Logger::createAndOpenLogFile("rssi");
-    m_track_log_file = Logger::createAndOpenLogFile("pos");
-    #endif
-    m_navigator->start();
-    showPosition(true);
-}
-
-void Beacons::deviceFailed(){
-    Logger::logMessage("Beacons::deviceFailed"); //TODO something
-}
 
 void Beacons::changeEstimation(){
     Logger::logMessage("Beacons::changeEstimation");
@@ -123,4 +115,16 @@ void Beacons::changeEstimation(){
     } else if(m_estimation_type == weighted_arith_mean){
         m_estimation_type = multilateration;
     }
+}
+
+estimation_type Beacons::getEstimationType(){
+    return m_estimation_type;
+}
+
+QList<DistanceToBeacon> Beacons::getDistances(){
+    return m_beacons.values();
+}
+
+Device* Beacons::getDevice(){
+    return m_device;
 }
