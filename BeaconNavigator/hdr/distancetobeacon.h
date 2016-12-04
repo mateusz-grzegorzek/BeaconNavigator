@@ -3,8 +3,7 @@
 
 #include "point.h"
 
-struct DistanceToBeacon
-{
+struct DistanceToBeacon{
     Point point;
     double distance;
 };

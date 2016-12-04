@@ -6,6 +6,7 @@ INCLUDEPATH += . \
 
 QT += quick bluetooth
 QT += network
+QT += widgets
 
 # Input
 SOURCES += src/*.cpp

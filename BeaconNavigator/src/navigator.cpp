@@ -1,49 +1,42 @@
-#include <QDebug>
 #include "navigator.h"
+#include "device.h"
+#include "logger.h"
+#include "calculator.h"
+#include "beacons.h"
 
-void Navigator::run()
-{
-    m_navigate = true;
+Navigator::Navigator(Beacons *beacons): m_beacons(beacons){
+}
 
-    while(m_navigate)
-    {
+void Navigator::run(){
+    m_is_navigating = true;
+    while(m_is_navigating){
         QThread::sleep(1);
-        if(!m_beacons->getDevice()->getScanState())
-        {
-            logMessage("Navigator::Device Scan State Off");
+        if(!m_beacons->getDevice()->getScanState()){
+            Logger::logMessage("Navigator::Device Scan State Off");
+            m_is_navigating = false;
             break;
         }
         estimation_type type = m_beacons->getEstimationType();
-        if(type == multilateration)
-        {
-            m_position = m_calculator->calcMultilateration(m_beacons->getDistances());
+        Point position;
+        bool succes = false;
+        if(type == multilateration){
+            succes = Calculator::calcMultilateration(position, m_beacons->getDistances());
+        } else if(type == weighted_arith_mean){
+            succes = Calculator::calcWeightedArithMean(position, m_beacons->getDistances());
+        } else {
+            Logger::logMessage("ERROR: Unknown estimation chosen.");
         }
-        else if(type == weightedArithMean)
-        {
-            m_position = m_calculator->calcWeightedArithMean(m_beacons->getDistances());
+        if(succes){
+            m_beacons->updatePosition(position);
         }
-        else
-        {
-            logMessage("ERROR: Unknown estimation chosen.");
-            m_position = {0,0};
-        }
-        m_beacons->updatePosition();
     }
 }
 
-Navigator::Navigator(Beacons* beacons, Calculator* calculator)
-    :m_beacons(beacons), m_calculator(calculator), m_navigate(false)
-{
-
+void Navigator::turnOff(){
+    Logger::logMessage("Navigator::turnOff");
+    m_is_navigating = false;
 }
 
-Point Navigator::getPosition()
-{
-    return m_position;
-}
-
-void Navigator::turnOff()
-{
-    logMessage("Navigator::turnOff");
-    m_navigate = false;
+bool Navigator::isNavigating(){
+    return m_is_navigating;
 }

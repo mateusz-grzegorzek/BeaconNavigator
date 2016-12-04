@@ -1,133 +1,62 @@
 #ifndef BEACONS_H
 #define BEACONS_H
 
-#include <QObject>
-#include <QString>
-#include <QMap>
-#include <QThread>
-#include <QMutex>
-#include <QFile>
-#include "device.h"
-#include "calculator.h"
-#include "navigator.h"
 #include "point.h"
 #include "distancetobeacon.h"
-#include "logger.h"
-#include "loggerinterface.h"
+#include <QObject>
+#include <QFile>
+#include <QMutex>
+#include <QMap>
 
-QT_FORWARD_DECLARE_CLASS (Device)
-QT_FORWARD_DECLARE_CLASS (Navigator)
+class Device;
+class Navigator;
+class Calculator;
 
 enum estimation_type
 {
     multilateration,
-    weightedArithMean
+    weighted_arith_mean
 };
 
-enum mode_type
-{
-    tracking,
-    median_tracking,
-    rssi_measuring
-};
-
-enum filter_type
-{
-    second_order,
-    third_order
-};
-
-class Beacons: public QObject, public LoggerInterface
+class Beacons: public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString info READ getInfo WRITE setInfo NOTIFY infoChanged)
-    Q_PROPERTY(QString estimationInfo READ getEstimationInfo NOTIFY estimationInfoChanged)
-    Q_PROPERTY(QString position READ getPosition NOTIFY positionChanged)
-    Q_PROPERTY(QString rssi READ getRssi NOTIFY rssiChanged)
-    Q_PROPERTY(bool trackingState READ trackingState NOTIFY stateChanged)
-    Q_PROPERTY(bool rssiMeasState READ rssiMeasState NOTIFY rssiMeasStateChanged)
-    Q_PROPERTY(QString rssiMacAddress READ getRssiMacAddress WRITE setRssiMacAddress NOTIFY rssiMacAddressChanged)
 public:
     Beacons();
-    void setDevice(Device* device);
-    void setCalculator(Calculator* calculator);
-    void setNavigator(Navigator* navigator);
+    void initModules();
 
-    QString getInfo();
-    QString getEstimationInfo();
-    estimation_type getEstimationType();
-    void setInfo(QString info);
-    void setEstimationInfo(estimation_type type);
-    QString getPosition();
-    QString getRssi();
-    void updatePosition();
-    bool trackingState();
-    bool rssiMeasState();
-    bool checkMacAddress(QString mac_address);
+    void startNavigation();
+    bool isNavigating();
+    void stopNavigation();
+
     void updateBeaconInfo(QString mac_address, qint16 rssi);
-    double getDistance(QString mac_address);
+    bool checkMacAddress(const QString& mac_address);
+    void updatePosition(Point position);
+
+    estimation_type getEstimationType();
+
     QList<DistanceToBeacon> getDistances();
     Device *getDevice();
 public slots:
-    void startTracking();
-    void startNavigate();
-    void stopScan();
-    void stopTracking();
-    void startMeasuring(QString mac_address);
-    void stopMeasuring();
-    void editBeacon(QString mac_address, QString position);
+    void deviceStarted();
+    void deviceFailed();
     void changeEstimation();
-    QString getRssiMacAddress();
-    void setRssiMacAddress(QString mac_address);
-    void exitApplication();
 Q_SIGNALS:
-    void infoChanged();
-    void estimationInfoChanged();
-    void positionChanged();
-    void rssiChanged();
-    void stateChanged();
-    void rssiMeasStateChanged();
-    void rssiMacAddressChanged();
+    void positionChanged(Point);
+    void showPosition(bool);
 private:
-    void updateDistance(QString mac_address, qint16 rssi);
-    void medianTracking(QString mac_address, qint16& rssi);
-    void updateRssi(QString mac_address, qint16 rssi);
-    bool validateMacAddress(QString mac_address);
-    void startScan();
     void loadBeacons();
-    void printRssi(qint16 rssi);
-
-    void createAndOpenRssiLogFile();
-    void stopNavigate();
-    void logPosition(Point point);
+    void updateDistance(QString mac_address, qint16 rssi);
 
     Device* m_device;
-    Calculator* m_calculator;
     Navigator* m_navigator;
-    QFile* m_track_log_file;
 
     QMap<QString, DistanceToBeacon> m_beacons;
-    QMutex m_mutex;
-    QString m_info;
-    QString m_position;
-    QString m_rssi;
+    QMutex m_beacons_mutex;
     estimation_type m_estimation_type;
 
-    mode_type m_mode_type;
-    bool m_rssi_meas_state;
-    QString m_rssi_mac_address;
     QFile* m_rssi_log_file;
-
-    Point m_last_point;
-    double m_filter_strength;
-    filter_type m_filter_type;
-    QList<Point> m_last_points;
-    bool m_apply_filter;
-    Point applyFilter(Point point);
-
-    QMap<QString, QList<qint16>> m_median_cache;
-
-    QString start_tracking_msg = "Start Tracking";
+    QFile* m_track_log_file;
 };
 
 #endif // BEACONS_H

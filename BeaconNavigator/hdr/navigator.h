@@ -2,29 +2,20 @@
 #define NAVIGATOR_H
 
 #include <QThread>
-#include "beacons.h"
-#include "calculator.h"
-#include "point.h"
-#include "logger.h"
-#include "loggerinterface.h"
 
-QT_FORWARD_DECLARE_CLASS (Beacons)
-QT_FORWARD_DECLARE_CLASS (Calculator)
-QT_FORWARD_DECLARE_CLASS (Point)
+class Beacons;
 
-class Navigator: public QThread, public LoggerInterface
+class Navigator: public QThread
 {
     Q_OBJECT
 public:
+    Navigator(Beacons* beacons);
     void run();
-    Navigator(Beacons* beacons, Calculator* calculator);
-    Point getPosition();
     void turnOff();
+    bool isNavigating();
 private:
     Beacons* m_beacons;
-    Calculator* m_calculator;
-    Point m_position;
-    bool m_navigate;
+    bool m_is_navigating = false;
 };
 
 #endif // NAVIGATOR_H

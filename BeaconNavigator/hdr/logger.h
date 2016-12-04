@@ -7,24 +7,28 @@
 #include <QMutex>
 #include <QFile>
 
-class Logger: public QObject
-{
+class TcpServer;
+
+class Logger: public QObject{
     Q_OBJECT
 public:
-    Logger(QString path_to_logs);
-    QString getTimeStamp();
-    QFile* createLogFile(QString file_name);
-    bool openLogFile(QFile* file);
-    void closeLogFile(QFile* file);
-    void saveLog(QFile* file, QString log);
-    void pushLog(QString log);
-    QList<QString> popLogs();
+    void emitLog(QString log);
+
+    static void initLogger(QString path_to_logs);
+    static void logMessage(QString log);
+    static QString getTimeStamp();
+
+    static QFile* createAndOpenLogFile(QString file_name);
+    static void saveLogToFile(QFile* log_file, QString log);
+    static void closeLogFile(QFile* log_file);
+
+    static Logger* s_logger;
 Q_SIGNALS:
-    void newLog();
+    void newLog(QString);
 private:
-    QList<QString> m_logs;
-    QMutex m_mutex;
-    QString m_path_to_logs;
+    static QString m_path_to_logs;
+    static QFile* m_log_file;
+    static TcpServer* m_tcp_server;
 };
 
 #endif // LOGGER_H

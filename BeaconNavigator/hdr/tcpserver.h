@@ -1,27 +1,26 @@
 #ifndef TCPSERVER_H
 #define TCPSERVER_H
 
+#include <QObject>
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QList>
-#include <QObject>
+#include <QMutex>
 #include <QThread>
-#include "logger.h"
-#include "loggerinterface.h"
 
-class TcpServer: public QObject, public LoggerInterface
-{
+class TcpServer: public QObject{
     Q_OBJECT
 public:
     void startServer();
-    void sendLog(QString log);
-    virtual void setLogger(Logger* logger);
+
+    static TcpServer* s_tcp_server;
 private slots:
     void addClient();
-    void sendLogsToClients();
+    void sendLogToClients(QString log);
 private:
     QTcpServer* m_tcp_server;
-    QList<QTcpSocket*> sockets;
+    QList<QTcpSocket*> m_sockets;
+    QMutex m_sockets_mutex;
 };
 
 #endif // TCPSERVER_H

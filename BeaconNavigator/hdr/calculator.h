@@ -1,39 +1,39 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
-#include <QObject>
-#include <QList>
-#include <QPair>
-#include "beacons.h"
 #include "point.h"
 #include "distancetobeacon.h"
-#include "logger.h"
-#include "loggerinterface.h"
+#include <QObject>
+#include <QList>
+#include <QMap>
+#include <QString>
 
-QT_FORWARD_DECLARE_CLASS (Beacons)
+class Beacons;
 
 typedef QList<double> matrix;
 
-class Calculator: public LoggerInterface
-{
+class Calculator{
 public:
-    double calcDistance(qint16 rssi) const;
-    Point calcMultilateration(QList<DistanceToBeacon> distances);
-    Point calcWeightedArithMean(QList<DistanceToBeacon> distances);
+    static double calcDistance(const qint16& rssi);
+    static bool calcMultilateration(Point& position, QList<DistanceToBeacon> distances);
+    static bool calcWeightedArithMean(Point& position, QList<DistanceToBeacon> distances);
+    static void applyFilter(Point& point);
+    static void calcMedian(const QString& mac_address, qint16& rssi);
 private:
-    void calcCMatrix(); // (A^T*A)^(-1)
-    void calcCATMatrix(); // C*A^T
-    void calcBMatrix(); // b
-    Point calcPosition();
+    static void calcCMatrix(); // (A^T*A)^(-1)
+    static void calcCATMatrix(); // C*A^T
+    static void calcBMatrix(); // b
+    static bool calcPosition(Point &position);
 
-    Logger* m_logger;
-    QList<DistanceToBeacon> m_distances;
-    DistanceToBeacon m_last_distance;
-    const double f = 2400;
-    const int N = 30;
-    matrix c_matrix;
-    matrix cat_matrix;
-    matrix b_matrix;
+    static QList<DistanceToBeacon> m_distances;
+    static DistanceToBeacon m_last_distance;
+
+    static matrix c_matrix;
+    static matrix cat_matrix;
+    static matrix b_matrix;
+
+    static QList<Point> m_last_points;
+    static QMap<QString, QList<qint16>> m_median_cache;
 };
 
 #endif // CALCULATOR_H
