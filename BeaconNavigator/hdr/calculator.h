@@ -16,6 +16,8 @@ public:
     static double calcDistance(const qint16& rssi);
     static bool calcMultilateration(Point& position, QList<DistanceToBeacon> distances);
     static bool calcWeightedArithMean(Point& position, QList<DistanceToBeacon> distances);
+
+    static void initCalculator();
     static void applyFilter(Point& point);
     static void calcMedian(const QString& mac_address, qint16& rssi);
 private:

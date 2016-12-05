@@ -11,6 +11,7 @@ Navigator::Navigator(Beacons *beacons): m_beacons(beacons){
 
 void Navigator::run(){
     m_is_navigating = true;
+    Calculator::initCalculator();
     while(m_is_navigating){
         QThread::sleep(1);
         if(!m_beacons->getDevice()->getScanState()){

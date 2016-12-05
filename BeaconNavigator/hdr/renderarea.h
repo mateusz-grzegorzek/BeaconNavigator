@@ -63,6 +63,7 @@ class RenderArea : public QWidget
 public:
     RenderArea(QWidget *parent = 0);
     void addWall(double x1, double y1, double x2, double y2);
+    void addBeacon(double x, double y);
     void calcFlatAspectRatio();
 public slots:
     void showPosition(bool show);
@@ -73,6 +74,7 @@ private:
     bool m_show_position = false;
     QPointF m_position;
     QList<Wall> m_walls;
+    QList<QPointF> m_beacons_position;
     double m_aspect_ratio;
 };
 

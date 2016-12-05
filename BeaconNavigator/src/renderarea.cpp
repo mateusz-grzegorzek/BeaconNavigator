@@ -69,6 +69,10 @@ void RenderArea::addWall(double x1, double y1, double x2, double y2){
     m_walls.append(wall);
 }
 
+void RenderArea::addBeacon(double x, double y){
+    m_beacons_position.append(QPointF{x,y});
+}
+
 void RenderArea::calcFlatAspectRatio(){
     double flat_width = 0;
     double flat_height = 0;
@@ -137,10 +141,17 @@ void RenderArea::paintEvent(QPaintEvent *){
         painter.drawLine(wall.start*m_aspect_ratio, wall.end*m_aspect_ratio);
     }
 
+    for(QPointF& beacon: m_beacons_position){
+        QPen pen( Qt::blue );
+        pen.setWidth( 12 );
+        painter.setPen(pen);
+        painter.drawPoint(beacon*m_aspect_ratio);
+    }
+
     if(m_show_position){
         QPen pen( Qt::red );
         pen.setWidth( 7 );
         painter.setPen(pen);
-        painter.drawEllipse(QPoint(m_position.x()*100*m_aspect_ratio, m_position.y()*100*m_aspect_ratio), 50, 50);
+        painter.drawEllipse(QPoint(m_position.x()*m_aspect_ratio, m_position.y()*m_aspect_ratio), 50, 50);
     }
 }

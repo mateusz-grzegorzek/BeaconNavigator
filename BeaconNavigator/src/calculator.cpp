@@ -138,6 +138,11 @@ bool Calculator::calcPosition(Point& position){
     return true;
 }
 
+void Calculator::initCalculator(){
+    s_last_points.clear();
+    s_median_cache.clear();
+}
+
 void Calculator::applyFilter(Point& point){
     Logger::logMessage("Calculator::applyFilter");
     if(s_last_points.length() < 3){
