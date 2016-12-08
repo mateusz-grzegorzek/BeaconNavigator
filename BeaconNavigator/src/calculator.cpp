@@ -40,19 +40,6 @@ bool Calculator::calcMultilateration(Point &position, QList<DistanceToBeacon> di
         Logger::logMessage("ERROR: Less than three beacon's registered!");
         return false;
     }
-    int num_of_dist_above_zero = 0;
-    for(DistanceToBeacon dtb : distances){
-        if(dtb.distance > 0){
-            num_of_dist_above_zero++;
-            if(num_of_dist_above_zero > 2){
-                break;
-            }
-        }
-    }
-    if(num_of_dist_above_zero < 3){
-        Logger::logMessage("ERROR Less than three beacon's founded!");
-        return false;
-    }
     s_distances = distances;
     s_last_distance = s_distances.last();
     calcCMatrix();
@@ -63,19 +50,23 @@ bool Calculator::calcMultilateration(Point &position, QList<DistanceToBeacon> di
 
 bool Calculator::calcWeightedArithMean(Point& position, QList<DistanceToBeacon> distances){
     Logger::logMessage("Calculator::calcWeightedArithMean");
-    s_distances = distances;
-    Point point{0,0};
-    double sum_of_distances = 0;
-    for(DistanceToBeacon distance: s_distances){
-        double weight = (1/distance.distance);
-        point.x += distance.point.x*weight;
-        point.y += distance.point.y*weight;
-        sum_of_distances += weight;
+    if(distances.length() > 0){
+        Point point{0,0};
+        s_distances = distances;
+
+        double sum_of_distances = 0;
+        for(DistanceToBeacon distance: s_distances){
+            double weight = (1/distance.distance);
+            point.x += distance.point.x*weight;
+            point.y += distance.point.y*weight;
+            sum_of_distances += weight;
+        }
+        point.x /= sum_of_distances;
+        point.y /= sum_of_distances;
+        position = point;
+        return true;
     }
-    point.x /= sum_of_distances;
-    point.y /= sum_of_distances;
-    position = point;
-    return true;
+    return false;
 }
 
 void Calculator::calcCMatrix(){

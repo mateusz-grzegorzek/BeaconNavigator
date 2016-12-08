@@ -16,6 +16,7 @@ public:
 Q_SIGNALS:
     void positionChanged(Point);
 private:
+    bool minimumThreeBeaconsFounded();
     Beacons* m_beacons;
     bool m_is_navigating = false;
 };

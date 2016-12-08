@@ -42,7 +42,6 @@ public slots:
     void updatePosition(Point position);
 Q_SIGNALS:
     void positionChanged(Point);
-    void showPosition(bool);
     void navigatorStateChanged(bool);
 private:
     void loadBeacons();

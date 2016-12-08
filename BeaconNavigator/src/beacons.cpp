@@ -47,7 +47,6 @@ void Beacons::deviceStarted(){
     m_rssi_log_file = Logger::createAndOpenLogFile("rssi");
     m_track_log_file = Logger::createAndOpenLogFile("pos");
     m_navigator->start();
-    Q_EMIT showPosition(true);
     Q_EMIT navigatorStateChanged(true);
 }
 
@@ -69,7 +68,6 @@ void Beacons::stopNavigation(){
     m_navigator->turnOff();
     m_navigator->quit();
     m_navigator->wait();
-    Q_EMIT showPosition(false);
     Q_EMIT navigatorStateChanged(false);
 }
 

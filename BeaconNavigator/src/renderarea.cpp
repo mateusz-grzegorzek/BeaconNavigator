@@ -118,14 +118,10 @@ void RenderArea::calcFlatAspectRatio(){
 }
 
 void RenderArea::setPosition(const Point &position){
+    m_show_position = true;
     m_position.setX(position.x);
     m_position.setY(position.y);
     Logger::logMessage("RenderArea::setPosition=" + QString::number(m_position.x()) + "," + QString::number(m_position.y()));
-    update();
-}
-
-void RenderArea::showPosition(bool show){
-    m_show_position = show;
     update();
 }
 
@@ -153,5 +149,6 @@ void RenderArea::paintEvent(QPaintEvent *){
         pen.setWidth( 7 );
         painter.setPen(pen);
         painter.drawEllipse(QPoint(m_position.x()*m_aspect_ratio, m_position.y()*m_aspect_ratio), 50, 50);
+        m_show_position = false;
     }
 }

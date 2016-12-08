@@ -95,8 +95,6 @@ void Window::initBeacons(){
 
     connect(m_beacons, SIGNAL(positionChanged(Point)),
             m_render_area, SLOT(setPosition(Point)));
-    connect(m_beacons, SIGNAL(showPosition(bool)),
-            m_render_area, SLOT(showPosition(bool)));
     connect(m_beacons, SIGNAL(navigatorStateChanged(bool)), this, SLOT(navigatorStateChanged(bool)));
 
     for(DistanceToBeacon& dtb: m_beacons->getDistances()){

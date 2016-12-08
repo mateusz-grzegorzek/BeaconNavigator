@@ -66,7 +66,6 @@ public:
     void addBeacon(double x, double y);
     void calcFlatAspectRatio();
 public slots:
-    void showPosition(bool show);
     void setPosition(const Point& position);
 protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;

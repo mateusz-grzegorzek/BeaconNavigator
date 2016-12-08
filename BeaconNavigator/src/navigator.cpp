@@ -22,15 +22,17 @@ void Navigator::run(){
         estimation_type type = m_beacons->getEstimationType();
         Point position;
         bool succes = false;
-        if(type == multilateration){
-            succes = Calculator::calcMultilateration(position, m_beacons->getDistances());
-        } else if(type == weighted_arith_mean){
-            succes = Calculator::calcWeightedArithMean(position, m_beacons->getDistances());
-        } else {
-            Logger::logMessage("ERROR: Unknown estimation chosen.");
-        }
-        if(succes){
-            Q_EMIT positionChanged(position);
+        if(minimumThreeBeaconsFounded()){
+            if(type == multilateration){
+                succes = Calculator::calcMultilateration(position, m_beacons->getDistances());
+            } else if(type == weighted_arith_mean){
+                succes = Calculator::calcWeightedArithMean(position, m_beacons->getDistances());
+            } else {
+                Logger::logMessage("ERROR: Unknown estimation chosen.");
+            }
+            if(succes){
+                Q_EMIT positionChanged(position);
+            }
         }
     }
 }
@@ -42,4 +44,22 @@ void Navigator::turnOff(){
 
 bool Navigator::isNavigating(){
     return m_is_navigating;
+}
+
+bool Navigator::minimumThreeBeaconsFounded()
+{
+    int num_of_dist_above_zero = 0;
+    for(DistanceToBeacon dtb : m_beacons->getDistances()){
+        if(dtb.distance > 0){
+            num_of_dist_above_zero++;
+            if(num_of_dist_above_zero > 2){
+                break;
+            }
+        }
+    }
+    if(num_of_dist_above_zero < 3){
+        Logger::logMessage("ERROR Less than three beacon's founded!");
+        return false;
+    }
+    return true;
 }
