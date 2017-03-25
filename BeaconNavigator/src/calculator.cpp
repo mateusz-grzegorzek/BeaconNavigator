@@ -31,7 +31,7 @@ double Calculator::calcDistance(const qint16& rssi){
     if(path < 0){ // very close
         path = 0.01;
     }
-    return path;
+    return path*100;
 }
 
 bool Calculator::calcMultilateration(Point &position, QList<DistanceToBeacon> distances){
@@ -40,7 +40,12 @@ bool Calculator::calcMultilateration(Point &position, QList<DistanceToBeacon> di
         Logger::logMessage("ERROR: Less than three beacon's registered!");
         return false;
     }
-    s_distances = distances;
+    s_distances.clear();
+    for(DistanceToBeacon dst: distances){
+        if(dst.distance > 0){
+            s_distances.append(dst);
+        }
+    }
     s_last_distance = s_distances.last();
     calcCMatrix();
     calcCATMatrix();
@@ -52,19 +57,25 @@ bool Calculator::calcWeightedArithMean(Point& position, QList<DistanceToBeacon> 
     Logger::logMessage("Calculator::calcWeightedArithMean");
     if(distances.length() > 0){
         Point point{0,0};
-        s_distances = distances;
-
+        s_distances.clear();
+        for(DistanceToBeacon dst: distances){
+            if(dst.distance > 0){
+                s_distances.append(dst);
+            }
+        }
         double sum_of_distances = 0;
         for(DistanceToBeacon distance: s_distances){
-            double weight = (1/distance.distance);
+            double weight = (1/(distance.distance*distance.distance*distance.distance));
             point.x += distance.point.x*weight;
             point.y += distance.point.y*weight;
             sum_of_distances += weight;
         }
-        point.x /= sum_of_distances;
-        point.y /= sum_of_distances;
-        position = point;
-        return true;
+        if(sum_of_distances > 0){
+            point.x /= sum_of_distances;
+            point.y /= sum_of_distances;
+            position = point;
+            return true;
+        }
     }
     return false;
 }
@@ -115,17 +126,17 @@ void Calculator::calcBMatrix(){
 
 bool Calculator::calcPosition(Point& position){
     Logger::logMessage("Calculator::calcPosition");
-    double x = 0, y = 0;
+    Point point{0,0};
     int size = b_matrix.size();
     if(cat_matrix.size() != 2*size){
         Logger::logMessage("Calculator::calcPosition::ERROR!!!");
         return false;
     }
     for(int i = 0; i < size; ++i){
-        x += cat_matrix[i]*b_matrix[i];
-        y += cat_matrix[size+i]*b_matrix[i];
+        point.x += cat_matrix[i]*b_matrix[i];
+        point.y += cat_matrix[size+i]*b_matrix[i];
     }
-    position = {x,y};
+    position = point;
     return true;
 }
 
